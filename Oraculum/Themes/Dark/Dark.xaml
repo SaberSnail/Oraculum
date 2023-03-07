@@ -1,0 +1,21 @@
+﻿<ResourceDictionary
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<!-- Misc Brushes -->
+	<SolidColorBrush x:Key="WindowBackgroundBrush" Color="#000000" />
+
+	<Color x:Key="FontColor">#EEEEEE</Color>
+	<Color x:Key="FontDisabledColor">#888888</Color>
+
+	<SolidColorBrush x:Key="FontBrush" Color="{StaticResource FontColor}" />
+	<SolidColorBrush x:Key="FontDisabledBrush" Color="{StaticResource FontDisabledColor}" />
+
+	<!-- Buttons -->
+	<SolidColorBrush x:Key="ButtonBackgroundBrush" Color="#202020" />
+	<SolidColorBrush x:Key="ButtonBorderBrush" Color="Transparent" />
+
+	<!-- Splitters -->
+	<SolidColorBrush x:Key="SplitterBackgroundBrush" Color="#404040" />
+
+</ResourceDictionary>

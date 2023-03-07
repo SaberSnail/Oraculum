@@ -1,0 +1,62 @@
+﻿<ResourceDictionary
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+	<!-- Misc Brushes -->
+	<Color x:Key="WindowBackgroundColor">#DDDDDD</Color>
+	<Color x:Key="ContentBackgroundColor">#FFFFFF</Color>
+	<Color x:Key="ContentBackgroundHighContrastColor">#EEEEEE</Color>
+
+	<SolidColorBrush x:Key="WindowBackgroundBrush" Color="{StaticResource WindowBackgroundColor}" />
+	<SolidColorBrush x:Key="ContentBackgroundBrush" Color="{StaticResource ContentBackgroundColor}" />
+	<SolidColorBrush x:Key="ContentBackgroundHighContrastBrush" Color="{StaticResource ContentBackgroundHighContrastColor}" />
+
+	<Color x:Key="FontColor">#111111</Color>
+	<Color x:Key="FontDisabledColor">#777777</Color>
+	
+	<SolidColorBrush x:Key="FontBrush" Color="{StaticResource FontColor}" />
+	<SolidColorBrush x:Key="FontDisabledBrush" Color="{StaticResource FontDisabledColor}" />
+
+	<!-- Controls -->
+	<Thickness x:Key="ControlBorderThickness" Left="2" Top="2" Right="2" Bottom="2" />
+	<Thickness x:Key="ControlBorderLeftRightThickness" Left="2" Right="2" />
+	<Thickness x:Key="ControlBorderLeftThickness" Left="2" />
+	<CornerRadius x:Key="ControlBorderRadius" TopLeft="4" TopRight="4" BottomRight="4" BottomLeft="4" />
+
+	<Color x:Key="ControlForegroundBaseColor">#111111</Color>
+	<Color x:Key="ControlForegroundBaseDisabledColor">#909090</Color>
+	<Color x:Key="ControlForegroundBaseHoveredColor">#333333</Color>
+	<Color x:Key="ControlForegroundBasePressedColor">#000000</Color>
+
+	<Color x:Key="ControlBackgroundBaseColor">#EEEEEE</Color>
+	<Color x:Key="ControlBackgroundBaseDisabledColor">#F7F7F7</Color>
+	<Color x:Key="ControlBackgroundBaseHoveredColor">#E0E0E0</Color>
+	<Color x:Key="ControlBackgroundBasePressedColor">#D0D0D0</Color>
+
+	<Color x:Key="ControlBorderBaseColor">#C5C5C5</Color>
+	<Color x:Key="ControlBorderBaseDisabledColor">#EEEEEE</Color>
+	<Color x:Key="ControlBorderBaseHoveredColor">#CCCCCC</Color>
+	<Color x:Key="ControlBorderBasePressedColor">#C0C0C0</Color>
+
+	<Color x:Key="ControlBorderHighContrastColor">#DDDDDD</Color>
+
+	<SolidColorBrush x:Key="ControlForegroundBaseBrush" Color="{StaticResource ControlForegroundBaseColor}" />
+	<SolidColorBrush x:Key="ControlForegroundBaseDisabledBrush" Color="{StaticResource ControlForegroundBaseDisabledColor}" />
+	<SolidColorBrush x:Key="ControlForegroundBaseHoveredBrush" Color="{StaticResource ControlForegroundBaseHoveredColor}" />
+	<SolidColorBrush x:Key="ControlForegroundBasePressedBrush" Color="{StaticResource ControlForegroundBasePressedColor}" />
+
+	<SolidColorBrush x:Key="ControlBackgroundBaseBrush" Color="{StaticResource ControlBackgroundBaseColor}" />
+	<SolidColorBrush x:Key="ControlBackgroundBaseDisabledBrush" Color="{StaticResource ControlBackgroundBaseDisabledColor}" />
+	<SolidColorBrush x:Key="ControlBackgroundBaseHoveredBrush" Color="{StaticResource ControlBackgroundBaseHoveredColor}" />
+	<SolidColorBrush x:Key="ControlBackgroundBasePressedBrush" Color="{StaticResource ControlBackgroundBasePressedColor}" />
+
+	<SolidColorBrush x:Key="ControlBorderBaseBrush" Color="{StaticResource ControlBorderBaseColor}" />
+	<SolidColorBrush x:Key="ControlBorderBaseDisabledBrush" Color="{StaticResource ControlBorderBaseDisabledColor}" />
+	<SolidColorBrush x:Key="ControlBorderBaseHoveredBrush" Color="{StaticResource ControlBorderBaseHoveredColor}" />
+	<SolidColorBrush x:Key="ControlBorderBasePressedBrush" Color="{StaticResource ControlBorderBasePressedColor}" />
+
+	<!-- Splitters -->
+	<SolidColorBrush x:Key="SplitterBackgroundBrush" Color="#D0D0D0" />
+
+</ResourceDictionary>

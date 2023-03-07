@@ -1,0 +1,20 @@
+﻿<Application
+	x:Class="Oraculum.App"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:local="clr-namespace:Oraculum"
+	ShutdownMode="OnLastWindowClose">
+    
+	<Application.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="pack://application:,,,/GoldenAnvil.Utility.Windows;component/Theme/Default.xaml" />
+				<ResourceDictionary Source="Themes/Default/Default.xaml" />
+				<ResourceDictionary Source="Themes/Shared/Shared.xaml" />
+
+				<ResourceDictionary Source="SetsView/SetsView.xaml" />
+				<ResourceDictionary Source="SetView/SetView.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</Application.Resources>
+</Application>

@@ -23,7 +23,7 @@ namespace Oraculum.MainWindow
 			m_openSets.Add(new SetViewModel(StaticData.AllSet));
 			m_openSets.Add(new SetViewModel(new SetMetadata
 			{
-				Id = Guid.NewGuid(),
+				Id = new Guid("599d53df-5076-4f1e-af03-0abe36991eba"),
 				Author = "SaberSnail",
 				Version = 1,
 				Created = DateTime.Now,
@@ -33,7 +33,7 @@ namespace Oraculum.MainWindow
 			}));
 			m_openSets.Add(new SetViewModel(new SetMetadata
 			{
-				Id = Guid.NewGuid(),
+				Id = new Guid("04e1a881-9650-4cbb-8781-9f0b31391f83"),
 				Author = "SaberSnail",
 				Version = 1,
 				Created = DateTime.Now,

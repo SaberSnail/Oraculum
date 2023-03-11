@@ -22,4 +22,6 @@ namespace Oraculum.Data
 	public readonly record struct SetMetadata(Guid Id, string Author, int Version, DateTime Created, DateTime Modified, IReadOnlyList<string> Groups, string Title);
 
 	public readonly record struct TableMetadata(Guid Id, string Author, int Version, DateTime Created, DateTime Modified, IReadOnlyList<string> Groups, string Title);
+
+	public readonly record struct RowData(int Min, int Max, string Output);
 }

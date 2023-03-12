@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GoldenAnvil.Utility.Async;
+using GoldenAnvil.Utility.Logging;
 using Oraculum.Data;
+using Oraculum.SetView;
 
 namespace Oraculum.TableEditView
 {
@@ -62,6 +65,16 @@ namespace Oraculum.TableEditView
 			set => SetPropertyField(value, ref m_title);
 		}
 
+		public async Task LoadRowsIfNeeded()
+		{
+			if (m_isLoaded)
+				return;
+
+			Log.Info($"Loading table: {Title}");
+		}
+
+		private static ILogSource Log { get; } = LogManager.CreateLogSource(nameof(TableViewModel));
+
 		private Guid m_id;
 		private string m_author;
 		private int m_version;
@@ -69,5 +82,6 @@ namespace Oraculum.TableEditView
 		private DateTime m_modified;
 		private IReadOnlyList<string> m_groups;
 		private string m_title;
+		private bool m_isLoaded;
 	}
 }

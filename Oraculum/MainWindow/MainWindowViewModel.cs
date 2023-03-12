@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
 using Oraculum.Data;
 using Oraculum.SetsView;
 using Oraculum.SetView;
-using Oraculum.UI;
 
 namespace Oraculum.MainWindow
 {

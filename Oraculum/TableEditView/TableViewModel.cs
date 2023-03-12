@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using GoldenAnvil.Utility.Async;
 using GoldenAnvil.Utility.Logging;
 using Oraculum.Data;
-using Oraculum.SetView;
 
 namespace Oraculum.TableEditView
 {

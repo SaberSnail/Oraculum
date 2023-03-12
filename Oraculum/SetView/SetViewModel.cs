@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Documents;
 using GoldenAnvil.Utility.Logging;
-using GoldenAnvil.Utility.Windows;
+using Microsoft.VisualStudio.Threading;
 using Oraculum.Data;
 using Oraculum.TableEditView;
 
@@ -23,6 +20,7 @@ namespace Oraculum.SetView
 			m_modified = metadata.Modified;
 			m_groups = metadata.Groups ?? Array.Empty<string>();
 			m_title = metadata.Title ?? "";
+			m_syncContextScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
 			m_tables = new ObservableCollection<TableViewModel>();
 			Tables = new ReadOnlyObservableCollection<TableViewModel>(m_tables);
@@ -80,20 +78,46 @@ namespace Oraculum.SetView
 
 		public async void LoadTablesIfNeeded()
 		{
+			try
+			{
+				await LoadTablesIfNeededAsync();
+			}
+			catch (OperationCanceledException)
+			{
+			}
+		}
+
+		private async Task LoadTablesIfNeededAsync()
+		{
+			VerifyAccess();
 			if (m_isLoaded)
 				return;
 
-			Log.Info($"Loading set: {Title}");
+			using var _ = Log.TimedInfo($"Loading set: {Title}");
 
+			await m_syncContextScheduler;
 			IsWorking = true;
+			var tableId = Id;
 
-			var tables = await AppModel.Instance.Data.GetTablesInSet(Id);
-			m_tables.Clear();
-			foreach (var table in tables)
-				m_tables.Add(new TableViewModel(table));
+			try
+			{
+				await TaskScheduler.Default;
 
-			IsWorking = false;
-			m_isLoaded = true;
+				var tables = await AppModel.Instance.Data.GetTablesInSet(tableId);
+				await Task.Delay(TimeSpan.FromSeconds(4));
+
+				await m_syncContextScheduler;
+
+				m_tables.Clear();
+				foreach (var table in tables)
+					m_tables.Add(new TableViewModel(table));
+			}
+			finally
+			{
+				await m_syncContextScheduler;
+				IsWorking = false;
+				m_isLoaded = true;
+			}
 		}
 
 		private static ILogSource Log { get; } = LogManager.CreateLogSource(nameof(SetViewModel));
@@ -108,5 +132,6 @@ namespace Oraculum.SetView
 		private ObservableCollection<TableViewModel> m_tables;
 		private bool m_isWorking;
 		private bool m_isLoaded;
+		private TaskScheduler m_syncContextScheduler;
 	}
 }

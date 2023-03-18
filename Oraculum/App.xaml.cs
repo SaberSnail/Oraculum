@@ -12,7 +12,7 @@ namespace Oraculum
 		{
 		}
 
-		protected override void OnStartup(StartupEventArgs e) => OnStartupAsync(e).Wait();
+		protected override async void OnStartup(StartupEventArgs e) => await OnStartupAsync(e);
 
 		private async Task OnStartupAsync(StartupEventArgs e)
 		{
@@ -32,7 +32,7 @@ namespace Oraculum
 			Log.Info($"Finished starting up in {stopwatch.Elapsed}");
 		}
 
-		protected override void OnExit(ExitEventArgs e) => OnShutdownAsync(e).Wait();
+		protected override async void OnExit(ExitEventArgs e) => await OnShutdownAsync(e);
 
 		private async Task OnShutdownAsync(ExitEventArgs e)
 		{

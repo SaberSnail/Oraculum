@@ -2,7 +2,9 @@
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
+using GoldenAnvil.Utility.Windows.Async;
 using Oraculum.Data;
 using Oraculum.MainWindow;
 
@@ -27,6 +29,8 @@ namespace Oraculum
 
 		public Random Random { get; }
 
+		public TaskGroup TaskGroup => m_taskGroup;
+
 		public Uri CurrentTheme
 		{
 			get
@@ -44,10 +48,14 @@ namespace Oraculum
 		public async Task StartupAsync()
 		{
 			MainWindow = new MainWindowViewModel();
-			await Data.Initialize().ConfigureAwait(false);
+			m_taskGroup = new TaskGroup();
+			await Data.InitializeAsync().ConfigureAwait(false);
 		}
 
-		public async Task ShutdownAsync() { }
+		public async Task ShutdownAsync()
+		{
+			DisposableUtility.Dispose(ref m_taskGroup);
+		}
 
 		public string GetOrCreateDataFolder()
 		{
@@ -63,5 +71,6 @@ namespace Oraculum
 		private static readonly Lazy<AppModel> s_appModel = new(() => new AppModel());
 
 		private Uri m_currentTheme;
+		private TaskGroup m_taskGroup;
 	}
 }

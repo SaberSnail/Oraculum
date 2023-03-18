@@ -15,18 +15,18 @@ namespace Oraculum.Data
 	{
 		public DataManager() { }
 
-		public async Task Initialize()
+		public async Task InitializeAsync()
 		{
 			await using var connector = CreateConnector();
 			var hasInfoTable = await connector.Command("select name from sqlite_master where type='table' AND name='Info'")
 				.QueryFirstOrDefaultAsync<string>().ConfigureAwait(false) is not null;
 			if (hasInfoTable)
-				await VerifyDbVersion(connector).ConfigureAwait(false);
+				await VerifyDbVersionAsync(connector).ConfigureAwait(false);
 			else
-				await CreateDb(connector).ConfigureAwait(false);
+				await CreateDbAsync(connector).ConfigureAwait(false);
 		}
 
-		public async Task<IReadOnlyList<SetMetadata>> GetAllSetMetadata()
+		public async Task<IReadOnlyList<SetMetadata>> GetAllSetMetadataAsync()
 		{
 			await using var connector = CreateConnector();
 			return new[]
@@ -54,9 +54,9 @@ namespace Oraculum.Data
 			};
 		}
 
-		public async Task<IReadOnlyList<TableMetadata>> GetTablesInSet(Guid setId)
+		public async Task<IReadOnlyList<TableMetadata>> GetTablesInSetAsync(Guid setId)
 		{
-			var allTables = await GetAllTableMetadata().ConfigureAwait(false);
+			var allTables = await GetAllTableMetadataAsync().ConfigureAwait(false);
 
 			if (setId == StaticData.AllSetId)
 				return allTables;
@@ -73,7 +73,7 @@ namespace Oraculum.Data
 			return allTables.Where(x => tableIds.Contains(x.Id)).AsReadOnlyList();
 		}
 
-		public async Task<IReadOnlyList<TableMetadata>> GetAllTableMetadata()
+		public async Task<IReadOnlyList<TableMetadata>> GetAllTableMetadataAsync()
 		{
 			await using var connector = CreateConnector();
 			return new[]
@@ -181,7 +181,7 @@ namespace Oraculum.Data
 			};
 		}
 
-		public async Task<IReadOnlyList<RowData>> GetRows(Guid tableId)
+		public async Task<IReadOnlyList<RowData>> GetRowsAsync(Guid tableId)
 		{
 			await using var connector = CreateConnector();
 			return tableId.ToString() switch
@@ -270,7 +270,7 @@ namespace Oraculum.Data
 			return $"Data Source={dbFile}";
 		}
 
-		private static async Task VerifyDbVersion(DbConnector connector)
+		private static async Task VerifyDbVersionAsync(DbConnector connector)
 		{
 			var version = await connector.Command($"select Version from Info")
 				.QueryFirstAsync<long>().ConfigureAwait(false);
@@ -287,7 +287,7 @@ namespace Oraculum.Data
 			}
 		}
 
-		private static async Task CreateDb(DbConnector connector)
+		private static async Task CreateDbAsync(DbConnector connector)
 		{
 			var now = DateTime.UtcNow;
 			await using (await connector.BeginTransactionAsync())

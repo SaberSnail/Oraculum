@@ -61,12 +61,13 @@ namespace Oraculum.TableEditView
 			set => SetPropertyField(value, ref m_title);
 		}
 
-		public async Task LoadRowsIfNeeded()
+		public async Task LoadRowsIfNeededAsync()
 		{
 			if (m_isLoaded)
 				return;
 
 			Log.Info($"Loading table: {Title}");
+			m_isLoaded = true;
 		}
 
 		private static ILogSource Log { get; } = LogManager.CreateLogSource(nameof(TableViewModel));

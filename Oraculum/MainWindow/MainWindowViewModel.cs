@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
+using GoldenAnvil.Utility.Windows.Async;
 using Oraculum.Data;
 using Oraculum.SetsView;
 using Oraculum.SetView;
@@ -59,7 +60,10 @@ namespace Oraculum.MainWindow
 				if (SetPropertyField(value, ref m_selectedSet))
 				{
 					if (m_selectedSet is not null)
-						m_selectedSet.LoadTablesIfNeeded();
+					{
+						m_loadSelectedSetWork?.Cancel();
+						m_loadSelectedSetWork = TaskWatcher.Create(m_selectedSet.LoadTablesIfNeededAsync, AppModel.Instance.TaskGroup);
+					}
 				}
 			}
 		}
@@ -104,5 +108,6 @@ namespace Oraculum.MainWindow
 		private int m_randomValue;
 		private bool m_shouldAnimateRandomValue;
 		private SetViewModel? m_selectedSet;
+		private TaskWatcher m_loadSelectedSetWork;
 	}
 }

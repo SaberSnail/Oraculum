@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using GoldenAnvil.Utility.Logging;
-using Microsoft.VisualStudio.Threading;
+using GoldenAnvil.Utility.Windows.Async;
 using Oraculum.Data;
 using Oraculum.TableEditView;
 
@@ -20,7 +20,6 @@ namespace Oraculum.SetView
 			m_modified = metadata.Modified;
 			m_groups = metadata.Groups ?? Array.Empty<string>();
 			m_title = metadata.Title ?? "";
-			m_syncContextScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
 			m_tables = new ObservableCollection<TableViewModel>();
 			Tables = new ReadOnlyObservableCollection<TableViewModel>(m_tables);
@@ -76,18 +75,7 @@ namespace Oraculum.SetView
 
 		public ReadOnlyObservableCollection<TableViewModel> Tables { get; }
 
-		public async void LoadTablesIfNeeded()
-		{
-			try
-			{
-				await LoadTablesIfNeededAsync();
-			}
-			catch (OperationCanceledException)
-			{
-			}
-		}
-
-		private async Task LoadTablesIfNeededAsync()
+		public async Task LoadTablesIfNeededAsync(TaskStateController state)
 		{
 			VerifyAccess();
 			if (m_isLoaded)
@@ -95,28 +83,29 @@ namespace Oraculum.SetView
 
 			using var _ = Log.TimedInfo($"Loading set: {Title}");
 
-			await m_syncContextScheduler;
+			await state.ToSyncContext();
 			IsWorking = true;
 			var tableId = Id;
 
 			try
 			{
-				await TaskScheduler.Default;
+				await state.ToThreadPool();
 
-				var tables = await AppModel.Instance.Data.GetTablesInSet(tableId);
-				await Task.Delay(TimeSpan.FromSeconds(4));
+				var tables = await AppModel.Instance.Data.GetTablesInSetAsync(tableId);
+				await Task.Delay(TimeSpan.FromSeconds(4), state.CancellationToken);
 
-				await m_syncContextScheduler;
+				await state.ToSyncContext();
 
 				m_tables.Clear();
 				foreach (var table in tables)
 					m_tables.Add(new TableViewModel(table));
+
+				m_isLoaded = true;
 			}
 			finally
 			{
-				await m_syncContextScheduler;
+				await state.ToSyncContext();
 				IsWorking = false;
-				m_isLoaded = true;
 			}
 		}
 
@@ -132,6 +121,5 @@ namespace Oraculum.SetView
 		private ObservableCollection<TableViewModel> m_tables;
 		private bool m_isWorking;
 		private bool m_isLoaded;
-		private TaskScheduler m_syncContextScheduler;
 	}
 }

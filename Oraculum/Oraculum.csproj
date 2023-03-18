@@ -9,6 +9,14 @@
 		<Product>Oraculum</Product>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;VSTHRD100</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;VSTHRD100</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\GoldenAnvil.Utility\GoldenAnvil.Utility.Windows\GoldenAnvil.Utility.Windows.csproj" />
     <ProjectReference Include="..\..\GoldenAnvil.Utility\GoldenAnvil.Utility\GoldenAnvil.Utility.csproj" />
@@ -21,7 +29,6 @@
   <ItemGroup>
     <PackageReference Include="Faithlife.Data" Version="1.21.1" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.3" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="17.5.22" />
   </ItemGroup>
 
   <ItemGroup>

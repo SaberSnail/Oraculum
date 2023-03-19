@@ -61,11 +61,29 @@ namespace Oraculum {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Edit.
+        /// </summary>
+        public static string EditTableButtonLabel {
+            get {
+                return ResourceManager.GetString("EditTableButtonLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Hide Sets.
         /// </summary>
         public static string HideSetsButtonLabel {
             get {
                 return ResourceManager.GetString("HideSetsButtonLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Roll.
+        /// </summary>
+        public static string RollTableButtonLabel {
+            get {
+                return ResourceManager.GetString("RollTableButtonLabel", resourceCulture);
             }
         }
         

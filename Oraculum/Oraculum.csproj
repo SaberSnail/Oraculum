@@ -23,10 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ViewModels\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Faithlife.Data" Version="1.21.1" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.3" />
   </ItemGroup>

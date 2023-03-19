@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
 using Oraculum.Data;
 
-namespace Oraculum.TableEditView
+namespace Oraculum.ViewModels
 {
-  public sealed class TableViewModel : ViewModelBase
-  {
+	public sealed class TableViewModel : ViewModelBase
+	{
 		public TableViewModel(TableMetadata metadata)
-    {
+		{
 			m_id = metadata.Id;
 			m_author = metadata.Author ?? "";
 			m_version = metadata.Version;
@@ -17,6 +18,8 @@ namespace Oraculum.TableEditView
 			m_modified = metadata.Modified;
 			m_groups = metadata.Groups ?? Array.Empty<string>();
 			m_title = metadata.Title ?? "";
+
+			RandomValue = 100;
 		}
 
 		public Guid Id
@@ -61,6 +64,30 @@ namespace Oraculum.TableEditView
 			set => SetPropertyField(value, ref m_title);
 		}
 
+		public bool ShouldAnimateRandomValue
+		{
+			get => VerifyAccess(m_shouldAnimateRandomValue);
+			private set => SetPropertyField(value, ref m_shouldAnimateRandomValue);
+		}
+
+		public int RandomValue
+		{
+			get => VerifyAccess(m_randomValue);
+			private set => SetPropertyField(value, ref m_randomValue);
+		}
+
+		public void SetRandomValue()
+		{
+			ShouldAnimateRandomValue = true;
+			RandomValue = AppModel.Instance.Random.NextRoll(1, 100);
+			ShouldAnimateRandomValue = false;
+		}
+
+		public void OnRandomValueDisplayed()
+		{
+			Log.Info($"Finished rolling, got a {RandomValue}");
+		}
+
 		public async Task LoadRowsIfNeededAsync()
 		{
 			if (m_isLoaded)
@@ -80,5 +107,7 @@ namespace Oraculum.TableEditView
 		private IReadOnlyList<string> m_groups;
 		private string m_title;
 		private bool m_isLoaded;
+		private int m_randomValue;
+		private bool m_shouldAnimateRandomValue;
 	}
 }

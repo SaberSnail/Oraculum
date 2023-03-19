@@ -14,6 +14,8 @@
 
 				<ResourceDictionary Source="SetsView/SetsView.xaml" />
 				<ResourceDictionary Source="SetView/SetView.xaml" />
+				<ResourceDictionary Source="TableEditView/TableEditView.xaml" />
+				<ResourceDictionary Source="TableRollView/TableRollView.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 		</ResourceDictionary>
 	</Application.Resources>

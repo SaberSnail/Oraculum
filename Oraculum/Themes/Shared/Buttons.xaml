@@ -111,7 +111,7 @@
 		</Setter>
 	</Style>
 
-	<Style TargetType="{x:Type ButtonBase}" BasedOn="{StaticResource ButtonStyleBase}" />
+	<Style TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonStyleBase}" />
 
 	<Style x:Key="HorizontalExpanderButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonStyleBase}">
 		<Setter Property="ui:TemplateHelper.CornerRadius" Value="0" />

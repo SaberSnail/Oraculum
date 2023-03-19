@@ -1,0 +1,35 @@
+﻿<ResourceDictionary
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:viewModels="clr-namespace:Oraculum.ViewModels"
+	xmlns:ui="clr-namespace:Oraculum.UI"
+	xmlns:utility="clr-namespace:GoldenAnvil.Utility.Windows;assembly=GoldenAnvil.Utility.Windows">
+
+	<DataTemplate x:Key="TableRollTemplate" DataType="{x:Type viewModels:TableViewModel}">
+		<Grid Grid.Column="4" VerticalAlignment="Top">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+
+			<Button
+				Grid.Column="0"
+				Content="Random Value"
+				Command="{Binding Converter={x:Static utility:MethodToCommandConverter.Instance}, ConverterParameter=SetRandomValue}" />
+
+			<ui:DiceFlipPanel
+				Grid.Column="1"
+				Margin="8,4"
+				ShouldAnimate="{Binding ShouldAnimateRandomValue}"
+				MinimumValue="1"
+				MaximumValue="100"
+				ui:TemplateHelper.BorderThickness="1"
+				ui:TemplateHelper.BorderBrush="Black"
+				TargetValue="{Binding RandomValue}"
+				AnimationFinishedCommand="{Binding Converter={x:Static utility:MethodToCommandConverter.Instance}, ConverterParameter=OnRandomValueDisplayed}"
+				/>
+		</Grid>
+	</DataTemplate>
+
+</ResourceDictionary>

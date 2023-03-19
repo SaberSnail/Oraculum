@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Configuration;
 using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
 using GoldenAnvil.Utility.Windows.Async;
 using Oraculum.Data;
 using Oraculum.SetsView;
 using Oraculum.SetView;
+using Oraculum.ViewModels;
 
 namespace Oraculum.MainWindow
 {
@@ -16,8 +19,6 @@ namespace Oraculum.MainWindow
 			AllSets = new SetsViewModel();
 			m_openSets = new ObservableCollection<SetViewModel>();
 			OpenSets = new ReadOnlyObservableCollection<SetViewModel>(m_openSets);
-
-			RandomValue = 100;
 
 			m_openSets.Add(new SetViewModel(StaticData.AllSet));
 			m_openSets.Add(new SetViewModel(new SetMetadata
@@ -48,6 +49,12 @@ namespace Oraculum.MainWindow
 			private set => SetPropertyField(value, ref m_isSetsPanelVisible);
 		}
 
+		public bool IsEditTablePanelVisible
+		{
+			get => VerifyAccess(m_isEditTablePanelVisible);
+			private set => SetPropertyField(value, ref m_isEditTablePanelVisible);
+		}
+
 		public SetsViewModel AllSets { get; }
 
 		public ReadOnlyObservableCollection<SetViewModel> OpenSets { get; }
@@ -57,34 +64,29 @@ namespace Oraculum.MainWindow
 			get => VerifyAccess(m_selectedSet);
 			set
 			{
+				var oldValue = m_selectedSet;
 				if (SetPropertyField(value, ref m_selectedSet))
 				{
+					SelectedTable = null;
+
+					if (oldValue is not null)
+						oldValue.PropertyChanged -= OnSelectedSetPropertyChanged;
+
 					if (m_selectedSet is not null)
 					{
 						m_loadSelectedSetWork?.Cancel();
 						m_loadSelectedSetWork = TaskWatcher.Create(m_selectedSet.LoadTablesIfNeededAsync, AppModel.Instance.TaskGroup);
+
+						m_selectedSet.PropertyChanged += OnSelectedSetPropertyChanged;
 					}
 				}
 			}
 		}
 
-		public bool ShouldAnimateRandomValue
+		public TableViewModel? SelectedTable
 		{
-			get => VerifyAccess(m_shouldAnimateRandomValue);
-			private set => SetPropertyField(value, ref m_shouldAnimateRandomValue);
-		}
-
-		public int RandomValue
-		{
-			get => VerifyAccess(m_randomValue);
-			private set => SetPropertyField(value, ref m_randomValue);
-		}
-
-		public void SetRandomValue()
-		{
-			ShouldAnimateRandomValue = true;
-			RandomValue = AppModel.Instance.Random.NextRoll(1, 100);
-			ShouldAnimateRandomValue = false;
+			get => VerifyAccess(m_selectedTable);
+			set => SetPropertyField(value, ref m_selectedTable);
 		}
 
 		public void SetLightMode() =>
@@ -96,18 +98,22 @@ namespace Oraculum.MainWindow
 		public void ToggleIsSetsPanelVisible() =>
 			IsSetsPanelVisible = !IsSetsPanelVisible;
 
-		public void OnRandomValueDisplayed()
+		public void ToggleTableView() =>
+			IsEditTablePanelVisible = !IsEditTablePanelVisible;
+
+		private void OnSelectedSetPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
-			Log.Info($"Finished rolling, got a {RandomValue}");
+			if (e.HasChanged(nameof(SetViewModel.SelectedTable)))
+				SelectedTable = m_selectedSet!.SelectedTable;
 		}
 
 		private static ILogSource Log { get; } = LogManager.CreateLogSource(nameof(MainWindowViewModel));
 
 		private bool m_isSetsPanelVisible;
+		private bool m_isEditTablePanelVisible;
 		private ObservableCollection<SetViewModel> m_openSets;
-		private int m_randomValue;
-		private bool m_shouldAnimateRandomValue;
 		private SetViewModel? m_selectedSet;
-		private TaskWatcher m_loadSelectedSetWork;
+		private TaskWatcher? m_loadSelectedSetWork;
+		private TableViewModel? m_selectedTable;
 	}
 }

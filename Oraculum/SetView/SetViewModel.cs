@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using GoldenAnvil.Utility.Logging;
 using GoldenAnvil.Utility.Windows.Async;
 using Oraculum.Data;
-using Oraculum.TableEditView;
+using Oraculum.ViewModels;
 
 namespace Oraculum.SetView
 {
-	public sealed class SetViewModel : ViewModelBase
+    public sealed class SetViewModel : ViewModelBase
 	{
 		public SetViewModel(SetMetadata metadata)
 		{
@@ -75,6 +75,12 @@ namespace Oraculum.SetView
 
 		public ReadOnlyObservableCollection<TableViewModel> Tables { get; }
 
+		public TableViewModel SelectedTable
+		{
+			get => VerifyAccess(m_selectedTable);
+			set => SetPropertyField(value, ref m_selectedTable);
+		}
+
 		public async Task LoadTablesIfNeededAsync(TaskStateController state)
 		{
 			VerifyAccess();
@@ -92,7 +98,7 @@ namespace Oraculum.SetView
 				await state.ToThreadPool();
 
 				var tables = await AppModel.Instance.Data.GetTablesInSetAsync(tableId);
-				await Task.Delay(TimeSpan.FromSeconds(4), state.CancellationToken);
+				await Task.Delay(TimeSpan.FromSeconds(3), state.CancellationToken);
 
 				await state.ToSyncContext();
 
@@ -109,6 +115,8 @@ namespace Oraculum.SetView
 			}
 		}
 
+		public void SelectedTableChanged(TableViewModel table) => SelectedTable = table;
+
 		private static ILogSource Log { get; } = LogManager.CreateLogSource(nameof(SetViewModel));
 
 		private Guid m_id;
@@ -121,5 +129,6 @@ namespace Oraculum.SetView
 		private ObservableCollection<TableViewModel> m_tables;
 		private bool m_isWorking;
 		private bool m_isLoaded;
+		private TableViewModel? m_selectedTable;
 	}
 }

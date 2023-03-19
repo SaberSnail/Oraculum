@@ -117,8 +117,14 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="EditTableButtonLabel" xml:space="preserve">
+    <value>Edit</value>
+  </data>
   <data name="HideSetsButtonLabel" xml:space="preserve">
     <value>Hide Sets</value>
+  </data>
+  <data name="RollTableButtonLabel" xml:space="preserve">
+    <value>Roll</value>
   </data>
   <data name="ShowSetsButtonLabel" xml:space="preserve">
     <value>Show Sets</value>

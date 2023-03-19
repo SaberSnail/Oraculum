@@ -123,6 +123,9 @@
   <data name="HideSetsButtonLabel" xml:space="preserve">
     <value>Hide Sets</value>
   </data>
+  <data name="RollButtonLabel" xml:space="preserve">
+    <value>Roll</value>
+  </data>
   <data name="RollTableButtonLabel" xml:space="preserve">
     <value>Roll</value>
   </data>

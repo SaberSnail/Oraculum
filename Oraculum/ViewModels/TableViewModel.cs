@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
+using GoldenAnvil.Utility.Windows.Async;
 using Oraculum.Data;
+using Oraculum.Engine;
 
 namespace Oraculum.ViewModels
 {
@@ -18,8 +20,7 @@ namespace Oraculum.ViewModels
 			m_modified = metadata.Modified;
 			m_groups = metadata.Groups ?? Array.Empty<string>();
 			m_title = metadata.Title ?? "";
-
-			RandomValue = 100;
+			RandomSource = new DiceSourceViewModel((DiceSource) metadata.RandomSource, OnRandomValueDisplayed);
 		}
 
 		public Guid Id
@@ -64,37 +65,49 @@ namespace Oraculum.ViewModels
 			set => SetPropertyField(value, ref m_title);
 		}
 
-		public bool ShouldAnimateRandomValue
+		public bool IsWorking
 		{
-			get => VerifyAccess(m_shouldAnimateRandomValue);
-			private set => SetPropertyField(value, ref m_shouldAnimateRandomValue);
+			get => VerifyAccess(m_isWorking);
+			set => SetPropertyField(value, ref m_isWorking);
 		}
 
-		public int RandomValue
-		{
-			get => VerifyAccess(m_randomValue);
-			private set => SetPropertyField(value, ref m_randomValue);
-		}
+		public DiceSourceViewModel RandomSource { get; }
 
-		public void SetRandomValue()
+		public async Task LoadRowsIfNeededAsync(TaskStateController state)
 		{
-			ShouldAnimateRandomValue = true;
-			RandomValue = AppModel.Instance.Random.NextRoll(1, 100);
-			ShouldAnimateRandomValue = false;
-		}
-
-		public void OnRandomValueDisplayed()
-		{
-			Log.Info($"Finished rolling, got a {RandomValue}");
-		}
-
-		public async Task LoadRowsIfNeededAsync()
-		{
+			VerifyAccess();
 			if (m_isLoaded)
 				return;
 
-			Log.Info($"Loading table: {Title}");
-			m_isLoaded = true;
+			using var _ = Log.TimedInfo($"Loading table: {Title}");
+
+			await state.ToSyncContext();
+			IsWorking = true;
+			var tableId = Id;
+
+			try
+			{
+				await state.ToThreadPool();
+
+				var rows = await AppModel.Instance.Data.GetRowsAsync(tableId).ConfigureAwait(false);
+				await Task.Delay(TimeSpan.FromSeconds(2), state.CancellationToken);
+
+				await state.ToSyncContext();
+
+				m_rows = new RowManager(rows);
+
+				m_isLoaded = true;
+			}
+			finally
+			{
+				await state.ToSyncContext();
+				IsWorking = false;
+			}
+		}
+
+		private void OnRandomValueDisplayed(object? key)
+		{
+			Log.Info($"Finished rolling, got {key} : {m_rows.GetOutput(key)}");
 		}
 
 		private static ILogSource Log { get; } = LogManager.CreateLogSource(nameof(TableViewModel));
@@ -107,7 +120,7 @@ namespace Oraculum.ViewModels
 		private IReadOnlyList<string> m_groups;
 		private string m_title;
 		private bool m_isLoaded;
-		private int m_randomValue;
-		private bool m_shouldAnimateRandomValue;
+		private bool m_isWorking;
+		private RowManager m_rows;
 	}
 }

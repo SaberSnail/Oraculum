@@ -81,6 +81,15 @@ namespace Oraculum {
         /// <summary>
         ///   Looks up a localized string similar to Roll.
         /// </summary>
+        public static string RollButtonLabel {
+            get {
+                return ResourceManager.GetString("RollButtonLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Roll.
+        /// </summary>
         public static string RollTableButtonLabel {
             get {
                 return ResourceManager.GetString("RollTableButtonLabel", resourceCulture);

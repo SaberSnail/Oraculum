@@ -75,10 +75,20 @@ namespace Oraculum.SetView
 
 		public ReadOnlyObservableCollection<TableViewModel> Tables { get; }
 
-		public TableViewModel SelectedTable
+		public TableViewModel? SelectedTable
 		{
 			get => VerifyAccess(m_selectedTable);
-			set => SetPropertyField(value, ref m_selectedTable);
+			set
+			{
+				if (SetPropertyField(value, ref m_selectedTable))
+				{
+					if (m_selectedTable is not null)
+					{
+						m_loadSelectedTableWork?.Cancel();
+						m_loadSelectedTableWork = TaskWatcher.Create(m_selectedTable.LoadRowsIfNeededAsync, AppModel.Instance.TaskGroup);
+					}
+				}
+			}
 		}
 
 		public async Task LoadTablesIfNeededAsync(TaskStateController state)
@@ -91,13 +101,13 @@ namespace Oraculum.SetView
 
 			await state.ToSyncContext();
 			IsWorking = true;
-			var tableId = Id;
+			var setId = Id;
 
 			try
 			{
 				await state.ToThreadPool();
 
-				var tables = await AppModel.Instance.Data.GetTablesInSetAsync(tableId);
+				var tables = await AppModel.Instance.Data.GetTablesInSetAsync(setId);
 				await Task.Delay(TimeSpan.FromSeconds(3), state.CancellationToken);
 
 				await state.ToSyncContext();
@@ -130,5 +140,6 @@ namespace Oraculum.SetView
 		private bool m_isWorking;
 		private bool m_isLoaded;
 		private TableViewModel? m_selectedTable;
+		private TaskWatcher m_loadSelectedTableWork;
 	}
 }

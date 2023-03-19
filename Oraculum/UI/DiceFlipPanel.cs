@@ -130,7 +130,7 @@ namespace Oraculum.UI
 			for (int i = 1; i < panel.m_faces.Count; i++)
 			{
 				var face = panel.m_faces[i];
-				face.SetValue(AppModel.Instance.Random.Next(minimumValue, maximumValue));
+				face.SetValue(Random.Shared.Next(minimumValue, maximumValue));
 			}
 			panel.m_faces[^1].SetValue(targetValue);
 
@@ -282,7 +282,7 @@ namespace Oraculum.UI
 
 		private static RollDirection GetRandomDirection()
 		{
-			return AppModel.Instance.Random.NextRoll(1, 4) switch
+			return Random.Shared.NextRoll(1, 4) switch
 			{
 				1 => RollDirection.Up,
 				2 => RollDirection.Down,

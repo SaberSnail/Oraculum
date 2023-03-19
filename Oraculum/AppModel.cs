@@ -20,14 +20,11 @@ namespace Oraculum
 
 			m_currentTheme = new Uri(@"/Themes/Default/Default.xaml", UriKind.Relative);
 			Data = new DataManager();
-			Random = new Random();
 		}
 
 		public MainWindowViewModel? MainWindow { get; set; }
 
 		public DataManager Data { get; }
-
-		public Random Random { get; }
 
 		public TaskGroup TaskGroup => m_taskGroup;
 

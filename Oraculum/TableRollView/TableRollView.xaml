@@ -1,33 +1,55 @@
 ﻿<ResourceDictionary
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:viewModels="clr-namespace:Oraculum.ViewModels"
+	xmlns:oraculum="clr-namespace:Oraculum"
 	xmlns:ui="clr-namespace:Oraculum.UI"
-	xmlns:utility="clr-namespace:GoldenAnvil.Utility.Windows;assembly=GoldenAnvil.Utility.Windows">
+	xmlns:utility="clr-namespace:GoldenAnvil.Utility.Windows;assembly=GoldenAnvil.Utility.Windows"
+  xmlns:viewModels="clr-namespace:Oraculum.ViewModels"
+	>
+
+	<DataTemplate x:Key="DiceTemplate" DataType="{x:Type viewModels:DiceViewModel}">
+		<ui:DiceFlipPanel
+			Margin="2"
+			ShouldAnimate="{Binding ShouldAnimate}"
+			MinimumValue="1"
+			MaximumValue="{Binding MaxValue}"
+			ui:TemplateHelper.BorderThickness="1"
+			ui:TemplateHelper.BorderBrush="Black"
+			TargetValue="{Binding Value}"
+			AnimationFinishedCommand="{Binding Converter={x:Static utility:MethodToCommandConverter.Instance}, ConverterParameter=OnFinalValueDisplayed}"
+			/>
+	</DataTemplate>
+
+	<DataTemplate x:Key="DiceSourceTemplate" DataType="{x:Type viewModels:DiceSourceViewModel}">
+		<DockPanel>
+			<Button
+				DockPanel.Dock="Left"
+				VerticalAlignment="Center"
+				Content="{x:Static oraculum:OurResources.RollButtonLabel}"
+				Command="{Binding Converter={x:Static utility:MethodToCommandConverter.Instance}, ConverterParameter=Roll}" />
+
+			<ItemsControl
+				Margin="8,4"
+				HorizontalAlignment="Left"
+				ItemsSource="{Binding Dice}"
+				ItemTemplate="{DynamicResource DiceTemplate}"
+				>
+				<ItemsControl.ItemsPanel>
+					<ItemsPanelTemplate>
+						<WrapPanel />
+					</ItemsPanelTemplate>
+				</ItemsControl.ItemsPanel>
+			</ItemsControl>
+		</DockPanel>
+	</DataTemplate>
 
 	<DataTemplate x:Key="TableRollTemplate" DataType="{x:Type viewModels:TableViewModel}">
 		<Grid Grid.Column="4" VerticalAlignment="Top">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="Auto" />
-				<ColumnDefinition Width="Auto" />
-				<ColumnDefinition Width="*" />
-			</Grid.ColumnDefinitions>
-
-			<Button
-				Grid.Column="0"
-				Content="Random Value"
-				Command="{Binding Converter={x:Static utility:MethodToCommandConverter.Instance}, ConverterParameter=SetRandomValue}" />
-
-			<ui:DiceFlipPanel
-				Grid.Column="1"
-				Margin="8,4"
-				ShouldAnimate="{Binding ShouldAnimateRandomValue}"
-				MinimumValue="1"
-				MaximumValue="100"
-				ui:TemplateHelper.BorderThickness="1"
-				ui:TemplateHelper.BorderBrush="Black"
-				TargetValue="{Binding RandomValue}"
-				AnimationFinishedCommand="{Binding Converter={x:Static utility:MethodToCommandConverter.Instance}, ConverterParameter=OnRandomValueDisplayed}"
+			<ContentPresenter
+				Focusable="False"
+				Margin="8,8,64,8"
+				Content="{Binding RandomSource}"
+				ContentTemplate="{DynamicResource DiceSourceTemplate}"
 				/>
 		</Grid>
 	</DataTemplate>

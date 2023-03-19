@@ -8,6 +8,7 @@ using Faithlife.Data.SqlFormatting;
 using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
 using Microsoft.Data.Sqlite;
+using Oraculum.Engine;
 
 namespace Oraculum.Data
 {
@@ -87,6 +88,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Oracle" },
 					Title = "Almost Certain",
+					RandomSource = new DiceSource(10, 10, 10),
 				},
 				new TableMetadata
 				{
@@ -97,6 +99,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Oracle" },
 					Title = "Likely",
+					RandomSource = new DiceSource(100),
 				},
 				new TableMetadata
 				{
@@ -107,6 +110,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Oracle" },
 					Title = "50/50",
+					RandomSource = new DiceSource(100),
 				},
 				new TableMetadata
 				{
@@ -117,6 +121,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Oracle" },
 					Title = "Unlikely",
+					RandomSource = new DiceSource(100),
 				},
 				new TableMetadata
 				{
@@ -127,6 +132,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Oracle" },
 					Title = "Small Chance",
+					RandomSource = new DiceSource(100),
 				},
 				new TableMetadata
 				{
@@ -137,6 +143,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Custom", "Oracle" },
 					Title = "Almost Certain",
+					RandomSource = new DiceSource(100),
 				},
 				new TableMetadata
 				{
@@ -147,6 +154,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Custom", "Oracle" },
 					Title = "Likely",
+					RandomSource = new DiceSource(100),
 				},
 				new TableMetadata
 				{
@@ -157,6 +165,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Custom", "Oracle" },
 					Title = "50/50",
+					RandomSource = new DiceSource(100),
 				},
 				new TableMetadata
 				{
@@ -167,6 +176,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Custom", "Oracle" },
 					Title = "Unlikely",
+					RandomSource = new DiceSource(100),
 				},
 				new TableMetadata
 				{
@@ -177,6 +187,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Custom", "Oracle" },
 					Title = "Small Chance",
+					RandomSource = new DiceSource(100),
 				},
 			};
 		}

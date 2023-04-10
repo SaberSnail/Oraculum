@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
@@ -9,7 +10,40 @@ using Oraculum.Engine;
 
 namespace Oraculum.ViewModels
 {
-	public sealed class TableViewModel : ViewModelBase
+	public abstract class TreeNodeBase : ViewModelBase
+	{
+		public string? Title
+		{
+			get => VerifyAccess(m_title);
+			set => SetPropertyField(value, ref m_title);
+		}
+
+		private string? m_title;
+	}
+
+	public sealed class TreeBranch : TreeNodeBase
+	{
+		public TreeBranch()
+		{
+			Children = new ObservableCollection<TreeNodeBase>();
+		}
+
+		public ObservableCollection<TreeNodeBase> Children { get; }
+
+		public bool IsExpanded
+		{
+			get => VerifyAccess(m_isExpanded);
+			set => SetPropertyField(value, ref m_isExpanded);
+		}
+
+		private bool m_isExpanded;
+	}
+
+	public abstract class TreeLeafBase : TreeNodeBase
+	{
+	}
+
+	public sealed class TableViewModel : TreeLeafBase
 	{
 		public TableViewModel(TableMetadata metadata)
 		{
@@ -19,7 +53,8 @@ namespace Oraculum.ViewModels
 			m_created = metadata.Created;
 			m_modified = metadata.Modified;
 			m_groups = metadata.Groups ?? Array.Empty<string>();
-			m_title = metadata.Title ?? "";
+
+			Title = metadata.Title ?? "";
 			RandomSource = new DiceSourceViewModel((DiceSource) metadata.RandomSource, OnRandomValueDisplayed);
 		}
 
@@ -57,12 +92,6 @@ namespace Oraculum.ViewModels
 		{
 			get => VerifyAccess(m_groups);
 			set => SetPropertyField(value, ref m_groups);
-		}
-
-		public string Title
-		{
-			get => VerifyAccess(m_title);
-			set => SetPropertyField(value, ref m_title);
 		}
 
 		public bool IsWorking
@@ -118,9 +147,8 @@ namespace Oraculum.ViewModels
 		private DateTime m_created;
 		private DateTime m_modified;
 		private IReadOnlyList<string> m_groups;
-		private string m_title;
 		private bool m_isLoaded;
 		private bool m_isWorking;
-		private RowManager m_rows;
+		private RowManager? m_rows;
 	}
 }

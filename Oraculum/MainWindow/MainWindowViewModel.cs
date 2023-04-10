@@ -104,7 +104,7 @@ namespace Oraculum.MainWindow
 		private void OnSelectedSetPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.HasChanged(nameof(SetViewModel.SelectedTable)))
-				SelectedTable = m_selectedSet!.SelectedTable;
+				SelectedTable = m_selectedSet!.SelectedTable as TableViewModel;
 		}
 
 		private static ILogSource Log { get; } = LogManager.CreateLogSource(nameof(MainWindowViewModel));

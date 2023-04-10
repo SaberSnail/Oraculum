@@ -88,7 +88,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Oracle" },
 					Title = "Almost Certain",
-					RandomSource = new DiceSource(10, 10, 10),
+					RandomSource = new DiceSource(100),
 				},
 				new TableMetadata
 				{

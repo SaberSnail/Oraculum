@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using GoldenAnvil.Utility.Logging;
 using GoldenAnvil.Utility.Windows.Async;
@@ -21,8 +22,8 @@ namespace Oraculum.SetView
 			m_groups = metadata.Groups ?? Array.Empty<string>();
 			m_title = metadata.Title ?? "";
 
-			m_tables = new ObservableCollection<TableViewModel>();
-			Tables = new ReadOnlyObservableCollection<TableViewModel>(m_tables);
+			m_tables = new ObservableCollection<TreeNodeBase>();
+			Tables = new ReadOnlyObservableCollection<TreeNodeBase>(m_tables);
 		}
 
 		public Guid Id
@@ -73,19 +74,19 @@ namespace Oraculum.SetView
 			set => SetPropertyField(value, ref m_isWorking);
 		}
 
-		public ReadOnlyObservableCollection<TableViewModel> Tables { get; }
+		public ReadOnlyObservableCollection<TreeNodeBase> Tables { get; }
 
-		public TableViewModel? SelectedTable
+		public TreeNodeBase? SelectedTable
 		{
 			get => VerifyAccess(m_selectedTable);
 			set
 			{
 				if (SetPropertyField(value, ref m_selectedTable))
 				{
-					if (m_selectedTable is not null)
+					if (m_selectedTable is TableViewModel table)
 					{
 						m_loadSelectedTableWork?.Cancel();
-						m_loadSelectedTableWork = TaskWatcher.Create(m_selectedTable.LoadRowsIfNeededAsync, AppModel.Instance.TaskGroup);
+						m_loadSelectedTableWork = TaskWatcher.Create(table.LoadRowsIfNeededAsync, AppModel.Instance.TaskGroup);
 					}
 				}
 			}
@@ -114,7 +115,21 @@ namespace Oraculum.SetView
 
 				m_tables.Clear();
 				foreach (var table in tables)
-					m_tables.Add(new TableViewModel(table));
+				{
+					TreeBranch? parent = null;
+					foreach (var parentTitle in table.Groups)
+					{
+						var newParent = GetMatchingBranch(parentTitle, parent);
+						if (newParent is null)
+						{
+							newParent = new TreeBranch { Title = parentTitle };
+							AddItemToTables(newParent, parent);
+						}
+						parent = newParent;
+					}
+
+					AddItemToTables(new TableViewModel(table), parent);
+				}
 
 				m_isLoaded = true;
 			}
@@ -125,7 +140,29 @@ namespace Oraculum.SetView
 			}
 		}
 
-		public void SelectedTableChanged(TableViewModel table) => SelectedTable = table;
+		public void SelectedTableChanged(TreeNodeBase table) => SelectedTable = table;
+
+		private TreeBranch? GetMatchingBranch(string branchTitle, TreeNodeBase? parentNode)
+		{
+			var items = (IEnumerable<TreeBranch>?) (parentNode as TreeBranch)?.Children.OfType<TreeBranch>() ??
+				m_tables.OfType<TreeBranch>() ??
+				Enumerable.Empty<TreeBranch>();
+			return items.FirstOrDefault(x => x.Title == branchTitle);
+		}
+
+		private void AddItemToTables(TreeNodeBase item, TreeBranch? parent)
+		{
+			if (parent is null)
+			{
+				m_tables.Add(item);
+			}
+			else
+			{
+				parent.Children.Add(item);
+				if (item is TreeBranch)
+					parent.IsExpanded = true;
+			}
+		}
 
 		private static ILogSource Log { get; } = LogManager.CreateLogSource(nameof(SetViewModel));
 
@@ -136,10 +173,10 @@ namespace Oraculum.SetView
 		private DateTime m_modified;
 		private IReadOnlyList<string> m_groups;
 		private string m_title;
-		private ObservableCollection<TableViewModel> m_tables;
+		private ObservableCollection<TreeNodeBase> m_tables;
 		private bool m_isWorking;
 		private bool m_isLoaded;
-		private TableViewModel? m_selectedTable;
+		private TreeNodeBase? m_selectedTable;
 		private TaskWatcher m_loadSelectedTableWork;
 	}
 }

@@ -3,12 +3,16 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:local="clr-namespace:Oraculum.SetView"
 	xmlns:viewModels="clr-namespace:Oraculum.ViewModels"
-	xmlns:ga="clr-namespace:GoldenAnvil.Utility.Windows;assembly=GoldenAnvil.Utility.Windows"
 	xmlns:utility="clr-namespace:GoldenAnvil.Utility.Windows;assembly=GoldenAnvil.Utility.Windows">
 
 	<DataTemplate x:Key="SetHeaderTemplate" DataType="{x:Type local:SetViewModel}">
 		<TextBlock Text="{Binding Title}" />
 	</DataTemplate>
+
+
+	<HierarchicalDataTemplate x:Key="TableBranchTemplate" DataType="{x:Type viewModels:TreeBranch}" ItemsSource="{Binding Children}">
+		<TextBlock Text="{Binding Title}" />
+	</HierarchicalDataTemplate>
 
 	<DataTemplate x:Key="TableHeaderTemplate" DataType="{x:Type viewModels:TableViewModel}">
 		<TextBlock Text="{Binding Title}" />
@@ -31,10 +35,26 @@
 
 			<TreeView
 				Grid.Row="1"
-				ItemTemplate="{DynamicResource TableHeaderTemplate}"
 				ItemsSource="{Binding Tables}"
-				ga:TreeViewUtility.SelectedItemChangedCommand="{Binding Converter={x:Static utility:MethodToCommandConverter.Instance}, ConverterParameter=SelectedTableChanged}"
-				/>
+				utility:TreeViewUtility.SelectedItemChangedCommand="{Binding Converter={x:Static utility:MethodToCommandConverter.Instance}, ConverterParameter=SelectedTableChanged}"
+				>
+				<TreeView.ItemTemplateSelector>
+					<utility:TypeDataTemplateSelector>
+						<utility:TypeDataTemplate Type="{x:Type viewModels:TreeBranch}" Template="{StaticResource TableBranchTemplate}" />
+						<utility:TypeDataTemplate Type="{x:Type viewModels:TableViewModel}" Template="{StaticResource TableHeaderTemplate}" />
+					</utility:TypeDataTemplateSelector>
+				</TreeView.ItemTemplateSelector>
+				<TreeView.ItemContainerStyleSelector>
+					<utility:TypeStyleSelector>
+						<utility:TypeStyle Type="{x:Type viewModels:TreeBranch}">
+							<Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+								<Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+							</Style>
+						</utility:TypeStyle>
+						<utility:TypeStyle Type="{x:Type viewModels:TableViewModel}" Style="{StaticResource {x:Type TreeViewItem}}" />
+					</utility:TypeStyleSelector>
+				</TreeView.ItemContainerStyleSelector>
+			</TreeView>
 		</Grid>
 	</DataTemplate>
 

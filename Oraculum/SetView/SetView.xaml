@@ -25,13 +25,20 @@
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
 
-			<TextBox
-				Grid.Row="0"
-				BorderThickness="0"
-				HorizontalAlignment="Left"
-				VerticalAlignment="Top"
-				FontSize="24"
-				Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" />
+			<DockPanel Grid.Row="0">
+				<TextBox
+					DockPanel.Dock="Right"
+					Width="200"
+					VerticalAlignment="Bottom"
+					Text="{Binding TableFilter, UpdateSourceTrigger=PropertyChanged}" />
+
+				<TextBox
+					BorderThickness="0"
+					HorizontalAlignment="Left"
+					VerticalAlignment="Top"
+					FontSize="24"
+					Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" />
+			</DockPanel>
 
 			<TreeView
 				Grid.Row="1"
@@ -51,7 +58,9 @@
 								<Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
 							</Style>
 						</utility:TypeStyle>
-						<utility:TypeStyle Type="{x:Type viewModels:TableViewModel}" Style="{StaticResource {x:Type TreeViewItem}}" />
+						<utility:TypeStyle Type="{x:Type viewModels:TableViewModel}">
+							<Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource {x:Type TreeViewItem}}" />
+						</utility:TypeStyle>
 					</utility:TypeStyleSelector>
 				</TreeView.ItemContainerStyleSelector>
 			</TreeView>

@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
-using GoldenAnvil.Utility;
+using System.Windows.Data;
 using GoldenAnvil.Utility.Logging;
 using GoldenAnvil.Utility.Windows.Async;
 using Oraculum.Data;
@@ -18,23 +19,87 @@ namespace Oraculum.ViewModels
 			set => SetPropertyField(value, ref m_title);
 		}
 
+		public void SetCurrentFilter(string? filterText, bool force)
+		{
+			VerifyAccess();
+			if (!force && m_currentFilter == filterText)
+				return;
+
+			m_currentFilter = filterText;
+			m_lastMatchesFilter = null;
+
+			SetCurrentFilterCore(filterText, force);
+		}
+
+		public bool MatchesCurrentFilter()
+		{
+			if (m_lastMatchesFilter.HasValue)
+				return m_lastMatchesFilter.Value;
+
+			m_lastMatchesFilter = MatchesCurrentFilterCore();
+			return m_lastMatchesFilter.Value;
+		}
+
+		protected string? GetCurrentFilter() => m_currentFilter;
+
+		protected virtual bool MatchesCurrentFilterCore()
+		{
+			var filterText = GetCurrentFilter();
+
+			if (string.IsNullOrEmpty(filterText))
+				return true;
+
+			if (string.IsNullOrEmpty(Title))
+				return false;
+
+			return Title.Contains(filterText, StringComparison.CurrentCultureIgnoreCase);
+		}
+
+		protected virtual void SetCurrentFilterCore(string? filterText, bool force)
+		{
+		}
+
 		private string? m_title;
+		private string? m_currentFilter;
+		private bool? m_lastMatchesFilter;
 	}
 
 	public sealed class TreeBranch : TreeNodeBase
 	{
 		public TreeBranch()
 		{
-			Children = new ObservableCollection<TreeNodeBase>();
+			m_children = new List<TreeNodeBase>();
+			Children = CollectionViewSource.GetDefaultView(m_children);
+			Children.Filter = x => (x as TreeNodeBase)?.MatchesCurrentFilter() ?? false;
 		}
 
-		public ObservableCollection<TreeNodeBase> Children { get; }
+		public ICollectionView Children { get; }
 
 		public bool IsExpanded
 		{
 			get => VerifyAccess(m_isExpanded);
 			set => SetPropertyField(value, ref m_isExpanded);
 		}
+
+		public IEnumerable<TreeBranch> GetChildBranches() => m_children.OfType<TreeBranch>();
+
+		public void AddChild(TreeNodeBase child) => m_children.Add(child);
+
+		protected override bool MatchesCurrentFilterCore() =>
+			base.MatchesCurrentFilterCore() || m_children.Any(x => x.MatchesCurrentFilter());
+
+		protected override void SetCurrentFilterCore(string? filterText, bool force)
+		{
+			var adjustedFilterText = filterText;
+			if (base.MatchesCurrentFilterCore())
+				adjustedFilterText = null;
+
+			foreach (var child in m_children)
+				child.SetCurrentFilter(adjustedFilterText, force);
+			Children.Refresh();
+		}
+
+		private readonly List<TreeNodeBase> m_children;
 
 		private bool m_isExpanded;
 	}

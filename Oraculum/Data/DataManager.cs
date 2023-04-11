@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Faithlife.Data;
 using Faithlife.Data.SqlFormatting;
 using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
 using Microsoft.Data.Sqlite;
-using Oraculum.Engine;
+using ProtoBuf;
 
 namespace Oraculum.Data
 {
@@ -16,20 +17,213 @@ namespace Oraculum.Data
 	{
 		public DataManager() { }
 
-		public async Task InitializeAsync()
+		public async Task InitializeAsync(CancellationToken cancellationToken)
 		{
-			await using var connector = CreateConnector();
+			using var connector = CreateConnector();
 			var hasInfoTable = await connector.Command("select name from sqlite_master where type='table' AND name='Info'")
-				.QueryFirstOrDefaultAsync<string>().ConfigureAwait(false) is not null;
+				.QueryFirstOrDefaultAsync<string>(cancellationToken).ConfigureAwait(false) is not null;
 			if (hasInfoTable)
-				await VerifyDbVersionAsync(connector).ConfigureAwait(false);
+				await VerifyDbVersionAsync(connector, cancellationToken).ConfigureAwait(false);
 			else
-				await CreateDbAsync(connector).ConfigureAwait(false);
+				await CreateDbAsync(connector, cancellationToken).ConfigureAwait(false);
 		}
 
-		public async Task<IReadOnlyList<SetMetadata>> GetAllSetMetadataAsync()
+		public async Task<IReadOnlyList<SetMetadata>> GetAllSetMetadataAsync(CancellationToken cancellationToken)
 		{
-			await using var connector = CreateConnector();
+			using var connector = CreateConnector();
+
+			var metadataStreams = await connector.Command("select Metadata from SetMetadata").QueryAsync<byte[]>(cancellationToken).ConfigureAwait(false);
+			var metadatas = metadataStreams
+				.Select(x => Serializer.Deserialize<SetMetadata>(new ReadOnlySpan<byte>(x)))
+				.AsReadOnlyList();
+			return metadatas;
+		}
+
+		public async Task<IReadOnlyList<TableMetadata>> GetTablesInSetAsync(Guid setId, CancellationToken cancellationToken)
+		{
+			if (setId == StaticData.AllSetId)
+				return await GetAllTableMetadataAsync(cancellationToken).ConfigureAwait(false);
+
+			using var connector = CreateConnector();
+			var metadataStreams = await connector.Command(Sql.Format($@"
+				select tm.Metadata from TableMetadata tm
+				join SetTables st on st.TableRecordId = tm.RecordId
+				join SetMetadata sm on sm.RecordId = st.SetRecordId
+				where sm.SetId = {setId}
+			")).QueryAsync<byte[]>(cancellationToken).ConfigureAwait(false);
+			var metadatas = metadataStreams
+				.Select(x => Serializer.Deserialize<TableMetadata>(new ReadOnlySpan<byte>(x)))
+				.AsReadOnlyList();
+
+			return metadatas;
+		}
+
+		public async Task<IReadOnlyList<TableMetadata>> GetAllTableMetadataAsync(CancellationToken cancellationToken)
+		{
+			using var connector = CreateConnector();
+
+			var metadataStreams = await connector.Command("select Metadata from TableMetadata").QueryAsync<byte[]>(cancellationToken).ConfigureAwait(false);
+			var metadatas = metadataStreams
+				.Select(x => Serializer.Deserialize<TableMetadata>(new ReadOnlySpan<byte>(x)))
+				.AsReadOnlyList();
+
+			return metadatas;
+		}
+
+		public async Task<IReadOnlyList<RowData>> GetRowsAsync(Guid tableId, CancellationToken cancellationToken)
+		{
+			using var connector = CreateConnector();
+
+			var metadataStreams = await connector.Command(Sql.Format($@"
+				select rd.Data from RowData rd
+				join TableMetadata tm on tm.RecordId = rd.TableRecordId
+				where tm.TableId = {tableId}
+			")).QueryAsync<byte[]>(cancellationToken).ConfigureAwait(false);
+			var metadatas = metadataStreams
+				.Select(x => Serializer.Deserialize<RowData>(new ReadOnlySpan<byte>(x)))
+				.AsReadOnlyList();
+
+			return metadatas;
+		}
+
+		private static DbConnector CreateConnector() =>
+			DbConnector.Create(new SqliteConnection(CreateConnectionString()), s_connectorSettings);
+
+		private static string CreateConnectionString()
+		{
+			var path = AppModel.Instance.GetOrCreateDataFolder();
+			var dbFile = Path.Combine(path, "data.db");
+			return $"Data Source={dbFile}";
+		}
+
+		private static async Task VerifyDbVersionAsync(DbConnector connector, CancellationToken cancellationToken)
+		{
+			var version = await connector.Command($"select Version from Info")
+				.QueryFirstAsync<long>(cancellationToken).ConfigureAwait(false);
+
+			Scope logScope = Scope.Empty;
+			if (version < c_dbVersion)
+				logScope = Log.TimedInfo($"Updating database from version {version} to version {c_dbVersion}.");
+			using (logScope)
+			{
+				while (version < c_dbVersion)
+				{
+					using (await connector.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
+					{
+						switch (version)
+						{
+						case 1:
+							await UpdateDatabaseFrom1To2Async(connector, cancellationToken).ConfigureAwait(false);
+							break;
+						default:
+							throw new NotImplementedException($"Missing implementation of upgrade from version {version}");
+						};
+
+						version++;
+						var now = DateTime.UtcNow;
+						await connector.Command(Sql.Format($@"
+							update Info set Version = {version}, Updated = {now}
+						")).ExecuteAsync(cancellationToken).ConfigureAwait(false);
+
+						await connector.CommitTransactionAsync(cancellationToken).ConfigureAwait(false);
+					}
+				}
+			}
+		}
+
+		private static async Task UpdateDatabaseFrom1To2Async(DbConnector connector, CancellationToken cancellationToken)
+		{
+			await connector.Command(@"
+				create table SetMetadata (
+					RecordId integer primary key,
+					SetId string not null,
+					Metadata blob not null
+				);
+
+				create table TableMetadata (
+					RecordId integer primary key,
+					TableId string not null,
+					Metadata blob not null
+				);
+
+				create table SetTables (
+					SetRecordId integer not null,
+					TableRecordId integer not null
+				);
+
+				create index SetTables_SetTable on SetTables (SetRecordId, TableRecordId);
+
+				create table RowData (
+					TableRecordId integer not null,
+					Data blob not null
+				);
+			").ExecuteAsync(cancellationToken).ConfigureAwait(false);
+		}
+
+		private static async Task CreateDbAsync(DbConnector connector, CancellationToken cancellationToken)
+		{
+			var now = DateTime.UtcNow;
+			using (await connector.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
+			{
+				await connector.Command(c_createSql).ExecuteAsync(cancellationToken).ConfigureAwait(false);
+				await connector.Command(Sql.Format($@"
+					insert into Info (Version, Created, Updated)
+					values ({c_dbVersion}, {now}, {now})
+				")).ExecuteAsync(cancellationToken).ConfigureAwait(false);
+				await LoadDefaultDataAsync(connector, cancellationToken).ConfigureAwait(false);
+
+				await connector.CommitTransactionAsync(cancellationToken).ConfigureAwait(false);
+			}
+		}
+
+		private static async Task LoadDefaultDataAsync(DbConnector connector, CancellationToken cancellationToken)
+		{
+			var tableIdToDbId = new Dictionary<Guid, long>();
+			var tables = GetTableMetadatas();
+			foreach (var table in tables)
+			{
+				using var stream = new MemoryStream();
+				Serializer.Serialize(stream, table);
+
+				var dbId = await connector.Command(Sql.Format($@"
+					insert into TableMetadata (Metadata, TableId) values ({stream.ToArray()}, {table.Id}) returning RecordId
+				")).QuerySingleAsync<long>(cancellationToken).ConfigureAwait(false);
+				tableIdToDbId.Add(table.Id, dbId);
+
+				var rows = GetRowDatas(table.Id);
+				foreach (var row in rows)
+				{
+					using var rowStream = new MemoryStream();
+					Serializer.Serialize(rowStream, row);
+
+					await connector.Command(Sql.Format($@"
+						insert into RowData (TableRecordId, Data) values ({dbId}, {rowStream.ToArray()})
+					")).ExecuteAsync(cancellationToken).ConfigureAwait(false);
+				}
+			}
+
+			var sets = GetSetMetadatas();
+			foreach (var set in sets)
+			{
+				using var stream = new MemoryStream();
+				Serializer.Serialize(stream, set);
+
+				var dbId = await connector.Command(Sql.Format($@"
+					insert into SetMetadata (Metadata, SetId) values ({stream.ToArray()}, {set.Id}) returning RecordId
+				")).QuerySingleAsync<long>(cancellationToken).ConfigureAwait(false);
+
+				var tablesInSet = GetTablesInSet(set.Id);
+				foreach (var tableId in tablesInSet)
+				{
+					await connector.Command(Sql.Format($@"
+						insert into SetTables (SetRecordId, TableRecordId) values ({dbId}, {tableIdToDbId[tableId]})
+					")).ExecuteAsync(cancellationToken).ConfigureAwait(false);
+				}
+			}
+		}
+
+		private static IReadOnlyList<SetMetadata> GetSetMetadatas()
+		{
 			return new[]
 			{
 				new SetMetadata
@@ -55,28 +249,8 @@ namespace Oraculum.Data
 			};
 		}
 
-		public async Task<IReadOnlyList<TableMetadata>> GetTablesInSetAsync(Guid setId)
+		private static IReadOnlyList<TableMetadata> GetTableMetadatas()
 		{
-			var allTables = await GetAllTableMetadataAsync().ConfigureAwait(false);
-
-			if (setId == StaticData.AllSetId)
-				return allTables;
-
-			var tableIds = (setId.ToString() switch
-			{
-				c_ironswornSet => new[] { c_oracleAlmostCertain, c_oracleLikely, c_oracle5050, c_oracleUnlikely, c_oracleSmallChance },
-				c_ironswornCustomSet => new[] { c_oracleCustomAlmostCertain, c_oracleCustomLikely, c_oracleCustom5050, c_oracleCustomUnlikely, c_oracleCustomSmallChance },
-				_ => throw new ArgumentException($"Unknown set ID {setId.ToString()}"),
-			})
-			.Select(x => new Guid(x))
-			.ToHashSet();
-
-			return allTables.Where(x => tableIds.Contains(x.Id)).AsReadOnlyList();
-		}
-
-		public async Task<IReadOnlyList<TableMetadata>> GetAllTableMetadataAsync()
-		{
-			await using var connector = CreateConnector();
 			return new[]
 			{
 				new TableMetadata
@@ -88,7 +262,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Oracle" },
 					Title = "Almost Certain",
-					RandomSource = new DiceSource(100),
+					RandomSource = new RandomSourceData { Dice = new[] { 100 } },
 				},
 				new TableMetadata
 				{
@@ -99,7 +273,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Oracle" },
 					Title = "Likely",
-					RandomSource = new DiceSource(100),
+					RandomSource = new RandomSourceData { Dice = new[] { 100 } },
 				},
 				new TableMetadata
 				{
@@ -110,7 +284,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Oracle" },
 					Title = "50/50",
-					RandomSource = new DiceSource(100),
+					RandomSource = new RandomSourceData { Dice = new[] { 100 } },
 				},
 				new TableMetadata
 				{
@@ -121,7 +295,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Oracle" },
 					Title = "Unlikely",
-					RandomSource = new DiceSource(100),
+					RandomSource = new RandomSourceData { Dice = new[] { 100 } },
 				},
 				new TableMetadata
 				{
@@ -132,7 +306,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Oracle" },
 					Title = "Small Chance",
-					RandomSource = new DiceSource(100),
+					RandomSource = new RandomSourceData { Dice = new[] { 100 } },
 				},
 				new TableMetadata
 				{
@@ -143,7 +317,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Custom", "Oracle" },
 					Title = "Almost Certain",
-					RandomSource = new DiceSource(100),
+					RandomSource = new RandomSourceData { Dice = new[] { 100 } },
 				},
 				new TableMetadata
 				{
@@ -154,7 +328,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Custom", "Oracle" },
 					Title = "Likely",
-					RandomSource = new DiceSource(100),
+					RandomSource = new RandomSourceData { Dice = new[] { 100 } },
 				},
 				new TableMetadata
 				{
@@ -165,7 +339,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Custom", "Oracle" },
 					Title = "50/50",
-					RandomSource = new DiceSource(100),
+					RandomSource = new RandomSourceData { Dice = new[] { 100 } },
 				},
 				new TableMetadata
 				{
@@ -176,7 +350,7 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Custom", "Oracle" },
 					Title = "Unlikely",
-					RandomSource = new DiceSource(100),
+					RandomSource = new RandomSourceData { Dice = new[] { 100 } },
 				},
 				new TableMetadata
 				{
@@ -187,14 +361,13 @@ namespace Oraculum.Data
 					Modified = DateTime.Now,
 					Groups = new[] { "Ironsworn", "Custom", "Oracle" },
 					Title = "Small Chance",
-					RandomSource = new DiceSource(100),
+					RandomSource = new RandomSourceData { Dice = new[] { 100 } },
 				},
 			};
 		}
 
-		public async Task<IReadOnlyList<RowData>> GetRowsAsync(Guid tableId)
+		private static IReadOnlyList<RowData> GetRowDatas(Guid tableId)
 		{
-			await using var connector = CreateConnector();
 			return tableId.ToString() switch
 			{
 				c_oracleAlmostCertain => new[]
@@ -267,69 +440,64 @@ namespace Oraculum.Data
 					new RowData { Min = 92, Max = 99, Output = "yes" },
 					new RowData { Min = 100, Max = 100, Output = "yes, and..." },
 				},
-				_ => throw new ArgumentException($"Unknown table ID {tableId.ToString()}"),
+				_ => throw new ArgumentException($"Unknown table ID {tableId}"),
 			};
 		}
 
-		private static DbConnector CreateConnector() =>
-			DbConnector.Create(new SqliteConnection(CreateConnectionString()), s_connectorSettings);
-
-		private static string CreateConnectionString()
+		private static IReadOnlyList<Guid> GetTablesInSet(Guid setId)
 		{
-			var path = AppModel.Instance.GetOrCreateDataFolder();
-			var dbFile = Path.Combine(path, "data.db");
-			return $"Data Source={dbFile}";
-		}
-
-		private static async Task VerifyDbVersionAsync(DbConnector connector)
-		{
-			var version = await connector.Command($"select Version from Info")
-				.QueryFirstAsync<long>().ConfigureAwait(false);
-
-			Scope logScope = Scope.Empty;
-			if (version < c_dbVersion)
-				logScope = Log.TimedInfo($"Updating database from version {version} to version {c_dbVersion}.");
-			using (logScope)
+			return (setId.ToString() switch
 			{
-				while (version < c_dbVersion)
-				{
-					version++;
-				}
-			}
-		}
-
-		private static async Task CreateDbAsync(DbConnector connector)
-		{
-			var now = DateTime.UtcNow;
-			await using (await connector.BeginTransactionAsync())
-			{
-				await connector.Command(c_createSql).ExecuteAsync();
-				await connector.Command(Sql.Format($@"
-					insert into Info (Version, Created, Updated)
-					values ({c_dbVersion}, {now}, {now})
-				")).ExecuteAsync();
-
-				await connector.CommitTransactionAsync();
-			}
+				c_ironswornSet => new[] { c_oracleAlmostCertain, c_oracleLikely, c_oracle5050, c_oracleUnlikely, c_oracleSmallChance },
+				c_ironswornCustomSet => new[] { c_oracleCustomAlmostCertain, c_oracleCustomLikely, c_oracleCustom5050, c_oracleCustomUnlikely, c_oracleCustomSmallChance },
+				_ => throw new ArgumentException($"Unknown set ID {setId}"),
+			})
+			.Select(x => new Guid(x))
+			.AsReadOnlyList();
 		}
 
 		private static ILogSource Log { get; } = LogManager.CreateLogSource(nameof(DataManager));
 
-		private static readonly DbConnectorSettings s_connectorSettings = new DbConnectorSettings
+		private static readonly DbConnectorSettings s_connectorSettings = new()
 		{
 			AutoOpen = true,
 			LazyOpen = true,
-			SqlSyntax = Faithlife.Data.SqlFormatting.SqlSyntax.Sqlite,
+			SqlSyntax = SqlSyntax.Sqlite,
 		};
 
-		private const int c_dbVersion = 1;
+		private const int c_dbVersion = 2;
 
 		private const string c_createSql = @"
 			create table Info (
 				Version integer not null,
 				Created text not null,
 				Updated text not null
-			)";
+			);
+
+			create table SetMetadata (
+				RecordId integer primary key,
+				SetId string not null,
+				Metadata blob not null
+			);
+
+			create table TableMetadata (
+				RecordId integer primary key,
+				TableId string not null,
+				Metadata blob not null
+			);
+
+			create table SetTables (
+				SetRecordId integer not null,
+				TableRecordId integer not null
+			);
+
+			create index SetTables_SetTable on SetTables (SetRecordId, TableRecordId);
+
+			create table RowData (
+				TableRecordId integer not null,
+				Data blob not null
+			);
+			";
 
 		const string c_ironswornSet = "599d53df-5076-4f1e-af03-0abe36991eba";
 		const string c_ironswornCustomSet = "04e1a881-9650-4cbb-8781-9f0b31391f83";

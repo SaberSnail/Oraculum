@@ -24,7 +24,8 @@
 
   <ItemGroup>
     <PackageReference Include="Faithlife.Data" Version="1.21.1" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.3" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.5" />
+    <PackageReference Include="protobuf-net" Version="3.2.16" />
   </ItemGroup>
 
   <ItemGroup>

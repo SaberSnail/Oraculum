@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
@@ -46,7 +47,7 @@ namespace Oraculum
 		{
 			MainWindow = new MainWindowViewModel();
 			m_taskGroup = new TaskGroup();
-			await Data.InitializeAsync().ConfigureAwait(false);
+			await Data.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
 		}
 
 		public async Task ShutdownAsync()

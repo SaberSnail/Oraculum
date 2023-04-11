@@ -47,7 +47,7 @@ namespace Oraculum.ViewModels
       Value = value;
     }
 
-		private readonly Action<object> m_onValueDisplayed;
+		private readonly Action<object?> m_onValueDisplayed;
 
 		private bool m_shouldAnimate;
     private int m_value;

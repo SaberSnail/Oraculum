@@ -121,8 +121,7 @@ namespace Oraculum.SetView
 			{
 				await state.ToThreadPool();
 
-				var tables = await AppModel.Instance.Data.GetTablesInSetAsync(setId);
-				await Task.Delay(TimeSpan.FromSeconds(3), state.CancellationToken);
+				var tables = await AppModel.Instance.Data.GetTablesInSetAsync(setId, state.CancellationToken);
 
 				await state.ToSyncContext();
 

@@ -120,7 +120,7 @@ namespace Oraculum.ViewModels
 			m_groups = metadata.Groups ?? Array.Empty<string>();
 
 			Title = metadata.Title ?? "";
-			RandomSource = new DiceSourceViewModel((DiceSource) metadata.RandomSource, OnRandomValueDisplayed);
+			RandomSource = new DiceSourceViewModel((DiceSource) RandomSourceBase.Create(metadata.RandomSource), OnRandomValueDisplayed);
 		}
 
 		public Guid Id
@@ -183,8 +183,7 @@ namespace Oraculum.ViewModels
 			{
 				await state.ToThreadPool();
 
-				var rows = await AppModel.Instance.Data.GetRowsAsync(tableId).ConfigureAwait(false);
-				await Task.Delay(TimeSpan.FromSeconds(2), state.CancellationToken);
+				var rows = await AppModel.Instance.Data.GetRowsAsync(tableId, state.CancellationToken).ConfigureAwait(false);
 
 				await state.ToSyncContext();
 
@@ -201,7 +200,7 @@ namespace Oraculum.ViewModels
 
 		private void OnRandomValueDisplayed(object? key)
 		{
-			Log.Info($"Finished rolling, got {key} : {m_rows.GetOutput(key)}");
+			Log.Info($"Finished rolling, got {key} : {m_rows?.GetOutput(key)}");
 		}
 
 		private static ILogSource Log { get; } = LogManager.CreateLogSource(nameof(TableViewModel));

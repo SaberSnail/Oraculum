@@ -39,6 +39,18 @@ namespace Oraculum.Data
 			return metadatas;
 		}
 
+		public async Task<SetMetadata?> GetSetMetadataAsync(Guid setId, CancellationToken cancellationToken)
+		{
+			using var connector = CreateConnector();
+
+			var metadataStream = await connector.Command(Sql.Format($@"
+				select Metadata from SetMetadata where SetId = {setId}
+			")).QuerySingleOrDefaultAsync<byte[]>(cancellationToken).ConfigureAwait(false);
+
+			return metadataStream is null ? null :
+				Serializer.Deserialize<SetMetadata>(new ReadOnlySpan<byte>(metadataStream));
+		}
+
 		public async Task<IReadOnlyList<TableMetadata>> GetTablesInSetAsync(Guid setId, CancellationToken cancellationToken)
 		{
 			if (setId == StaticData.AllSetId)

@@ -45,9 +45,13 @@ namespace Oraculum
 
 		public async Task StartupAsync()
 		{
-			MainWindow = new MainWindowViewModel();
 			m_taskGroup = new TaskGroup();
-			await Data.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
+
+			await Data.InitializeAsync(CancellationToken.None);
+
+			MainWindow = new MainWindowViewModel();
+			await MainWindow.OpenSetAsync(new Guid("599d53df-5076-4f1e-af03-0abe36991eba"), CancellationToken.None);
+			await MainWindow.OpenSetAsync(new Guid("04e1a881-9650-4cbb-8781-9f0b31391f83"), CancellationToken.None);
 		}
 
 		public async Task ShutdownAsync()

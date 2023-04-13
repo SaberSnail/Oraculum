@@ -2,6 +2,8 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Configuration;
+using System.Threading;
+using System.Threading.Tasks;
 using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
 using GoldenAnvil.Utility.Windows.Async;
@@ -19,28 +21,7 @@ namespace Oraculum.MainWindow
 			AllSets = new SetsViewModel();
 			m_openSets = new ObservableCollection<SetViewModel>();
 			OpenSets = new ReadOnlyObservableCollection<SetViewModel>(m_openSets);
-
 			m_openSets.Add(new SetViewModel(StaticData.AllSet));
-			m_openSets.Add(new SetViewModel(new SetMetadata
-			{
-				Id = new Guid("599d53df-5076-4f1e-af03-0abe36991eba"),
-				Author = "SaberSnail",
-				Version = 1,
-				Created = DateTime.Now,
-				Modified = DateTime.Now,
-				Groups = new[] { "RPG", "Ironsworn" },
-				Title = "Ironsworn",
-			}));
-			m_openSets.Add(new SetViewModel(new SetMetadata
-			{
-				Id = new Guid("04e1a881-9650-4cbb-8781-9f0b31391f83"),
-				Author = "SaberSnail",
-				Version = 1,
-				Created = DateTime.Now,
-				Modified = DateTime.Now,
-				Groups = new[] { "RPG", "Ironsworn" },
-				Title = "Ironsworn (custom)",
-			}));
 		}
 
 		public bool IsSetsPanelVisible
@@ -100,6 +81,14 @@ namespace Oraculum.MainWindow
 
 		public void ToggleTableView() =>
 			IsEditTablePanelVisible = !IsEditTablePanelVisible;
+
+		public async Task OpenSetAsync(Guid setId, CancellationToken cancellationToken)
+		{
+			var data = AppModel.Instance.Data;
+			var setMetadata = await data.GetSetMetadataAsync(setId, cancellationToken);
+			if (setMetadata != null)
+				m_openSets.Add(new SetViewModel(setMetadata.Value));
+		}
 
 		private void OnSelectedSetPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{

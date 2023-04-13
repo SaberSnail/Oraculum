@@ -78,14 +78,6 @@
 							VerticalAlignment="Stretch"
 							Visibility="Visible"
 							/>
-						<Button
-							x:Name="ToggleTableViewButton"
-							HorizontalAlignment="Right"
-							VerticalAlignment="Top"
-							Margin="8"
-							Command="{Binding Converter={x:Static utility:MethodToCommandConverter.Instance}, ConverterParameter=ToggleTableView}"
-							Content="{x:Static oraculum:OurResources.EditTableButtonLabel}"
-							/>
 					</Grid>
 
 				</Grid>
@@ -97,7 +89,6 @@
 						<Setter TargetName="SetsColumn" Property="MaxWidth" Value="{x:Static system:Double.PositiveInfinity}" />
 					</DataTrigger>
 					<DataTrigger Binding="{Binding IsEditTablePanelVisible}" Value="True">
-						<Setter TargetName="ToggleTableViewButton" Property="Content" Value="{x:Static oraculum:OurResources.RollTableButtonLabel}" />
 						<Setter TargetName="TableRollPane" Property="Visibility" Value="Collapsed" />
 						<Setter TargetName="TableEditPane" Property="Visibility" Value="Visible" />
 					</DataTrigger>

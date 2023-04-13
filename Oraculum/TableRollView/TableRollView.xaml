@@ -44,13 +44,25 @@
 	</DataTemplate>
 
 	<DataTemplate x:Key="TableRollTemplate" DataType="{x:Type viewModels:TableViewModel}">
-		<Grid Grid.Column="4" VerticalAlignment="Top">
-			<ContentPresenter
-				Focusable="False"
-				Margin="8,8,64,8"
-				Content="{Binding RandomSource}"
-				ContentTemplate="{DynamicResource DiceSourceTemplate}"
-				/>
+		<Grid Grid.Column="4">
+			<DockPanel VerticalAlignment="Top" HorizontalAlignment="Stretch">
+				<Button
+					DockPanel.Dock="Right"
+					HorizontalAlignment="Right"
+					VerticalAlignment="Top"
+					Margin="8"
+					Command="{Binding Path=ViewModel, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}, Converter={x:Static utility:MethodToCommandConverter.Instance}, ConverterParameter=ToggleTableView}"
+					Content="{x:Static oraculum:OurResources.EditTableButtonLabel}"
+					/>
+
+				<ContentPresenter
+					Focusable="False"
+					Margin="8,0"
+					VerticalAlignment="Center"
+					Content="{Binding RandomSource}"
+					ContentTemplate="{DynamicResource DiceSourceTemplate}"
+					/>
+			</DockPanel>
 		</Grid>
 	</DataTemplate>
 

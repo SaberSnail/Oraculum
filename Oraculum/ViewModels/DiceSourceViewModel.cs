@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Oraculum.Engine;
 
 namespace Oraculum.ViewModels
 {
-  public class DiceViewModel : ViewModelBase
+	public class DiceViewModel : ViewModelBase
   {
     public DiceViewModel(int maxValue, Action<object?> onValueDisplayed)
     {

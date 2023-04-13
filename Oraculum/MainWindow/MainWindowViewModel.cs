@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Configuration;
 using System.Threading;
 using System.Threading.Tasks;
 using GoldenAnvil.Utility;

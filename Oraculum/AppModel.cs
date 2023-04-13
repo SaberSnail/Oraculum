@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
@@ -12,7 +11,7 @@ using Oraculum.MainWindow;
 
 namespace Oraculum
 {
-    public sealed class AppModel : ViewModelBase
+	public sealed class AppModel : ViewModelBase
 	{
 		public static AppModel Instance => s_appModel.Value;
 

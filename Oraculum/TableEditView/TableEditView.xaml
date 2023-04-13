@@ -6,7 +6,7 @@
   xmlns:viewModels="clr-namespace:Oraculum.ViewModels">
 
 	<DataTemplate x:Key="TableEditTemplate" DataType="{x:Type viewModels:TableViewModel}">
-		<Grid Grid.Column="4">
+		<Grid>
 			<DockPanel VerticalAlignment="Top" HorizontalAlignment="Stretch">
 				<Button
 					DockPanel.Dock="Right"

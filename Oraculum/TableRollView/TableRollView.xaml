@@ -44,8 +44,8 @@
 	</DataTemplate>
 
 	<DataTemplate x:Key="TableRollTemplate" DataType="{x:Type viewModels:TableViewModel}">
-		<Grid Grid.Column="4">
-			<DockPanel VerticalAlignment="Top" HorizontalAlignment="Stretch">
+		<DockPanel>
+			<DockPanel DockPanel.Dock="Top" VerticalAlignment="Top" HorizontalAlignment="Stretch">
 				<Button
 					DockPanel.Dock="Right"
 					HorizontalAlignment="Right"
@@ -63,7 +63,10 @@
 					ContentTemplate="{DynamicResource DiceSourceTemplate}"
 					/>
 			</DockPanel>
-		</Grid>
+
+			<FlowDocumentScrollViewer VerticalScrollBarVisibility="Auto" Document="{Binding RollLog.Document}" />
+
+		</DockPanel>
 	</DataTemplate>
 
 </ResourceDictionary>

@@ -21,6 +21,7 @@ namespace Oraculum.MainWindow
 			m_openSets = new ObservableCollection<SetViewModel>();
 			OpenSets = new ReadOnlyObservableCollection<SetViewModel>(m_openSets);
 			m_openSets.Add(new SetViewModel(StaticData.AllSet));
+			RollLog = new RollLogViewModel();
 		}
 
 		public bool IsSetsPanelVisible
@@ -66,8 +67,14 @@ namespace Oraculum.MainWindow
 		public TableViewModel? SelectedTable
 		{
 			get => VerifyAccess(m_selectedTable);
-			set => SetPropertyField(value, ref m_selectedTable);
+			set
+			{
+				if (SetPropertyField(value, ref m_selectedTable))
+					m_selectedTable.RollLog = RollLog;
+			}
 		}
+
+		public RollLogViewModel? RollLog { get; }
 
 		public void SetLightMode() =>
 			AppModel.Instance.CurrentTheme = new Uri(@"/Themes/Default/Default.xaml", UriKind.Relative);

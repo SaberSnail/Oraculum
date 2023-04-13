@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using GoldenAnvil.Utility.Logging;
 using GoldenAnvil.Utility.Windows.Async;
+using Microsoft.VisualStudio.Threading;
 using Oraculum.Data;
 using Oraculum.ViewModels;
 
 namespace Oraculum.SetView
 {
-    public sealed class SetViewModel : ViewModelBase
+	public sealed class SetViewModel : ViewModelBase
 	{
 		public SetViewModel(SetMetadata metadata)
 		{
@@ -121,7 +121,7 @@ namespace Oraculum.SetView
 			{
 				await state.ToThreadPool();
 
-				var tables = await AppModel.Instance.Data.GetTablesInSetAsync(setId, state.CancellationToken);
+				var tables = await AppModel.Instance.Data.GetTablesInSetAsync(setId, state.CancellationToken).ConfigureAwait(false);
 
 				await state.ToSyncContext();
 

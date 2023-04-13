@@ -59,7 +59,7 @@
 
 					<GridSplitter Grid.Column="3" HorizontalAlignment="Stretch" />
 
-					<Grid Grid.Column="4" VerticalAlignment="Stretch">
+					<Grid x:Name="TableContainer" Grid.Column="4" VerticalAlignment="Stretch" IsEnabled="False">
 						<ContentPresenter
 							x:Name="TableEditPane"
 							Focusable="False"
@@ -100,6 +100,9 @@
 						<Setter TargetName="ToggleTableViewButton" Property="Content" Value="{x:Static oraculum:OurResources.RollTableButtonLabel}" />
 						<Setter TargetName="TableRollPane" Property="Visibility" Value="Collapsed" />
 						<Setter TargetName="TableEditPane" Property="Visibility" Value="Visible" />
+					</DataTrigger>
+					<DataTrigger Binding="{Binding SelectedTable.IsWorking}" Value="False">
+						<Setter TargetName="TableContainer" Property="IsEnabled" Value="True" />
 					</DataTrigger>
 				</DataTemplate.Triggers>
 			</DataTemplate>

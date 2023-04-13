@@ -19,7 +19,7 @@
 	</DataTemplate>
 
 	<DataTemplate x:Key="SetContentTemplate" DataType="{x:Type local:SetViewModel}">
-		<Grid Margin="4">
+		<Grid x:Name="SetContainer" Margin="4" IsEnabled="False">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="*" />
@@ -65,6 +65,11 @@
 				</TreeView.ItemContainerStyleSelector>
 			</TreeView>
 		</Grid>
+		<DataTemplate.Triggers>
+			<DataTrigger Binding="{Binding IsWorking}" Value="False">
+				<Setter TargetName="SetContainer" Property="IsEnabled" Value="True" />
+			</DataTrigger>
+		</DataTemplate.Triggers>
 	</DataTemplate>
 
 </ResourceDictionary>

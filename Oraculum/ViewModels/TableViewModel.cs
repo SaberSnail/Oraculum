@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using GoldenAnvil.Utility.Logging;
 using GoldenAnvil.Utility.Windows.Async;
+using Microsoft.VisualStudio.Threading;
 using Oraculum.Data;
 using Oraculum.Engine;
 

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
 using GoldenAnvil.Utility.Windows.Async;
+using Microsoft.VisualStudio.Threading;
 using Oraculum.Data;
 using Oraculum.MainWindow;
 
@@ -17,6 +18,8 @@ namespace Oraculum
 
 		private AppModel()
 		{
+			m_taskGroup = new TaskGroup();
+
 			LogManager.Initialize(new DebugLogDestination());
 
 			m_currentTheme = new Uri(@"/Themes/Default/Default.xaml", UriKind.Relative);
@@ -43,15 +46,18 @@ namespace Oraculum
 			}
 		}
 
-		public async Task StartupAsync()
+		public async Task StartupAsync(TaskStateController state)
 		{
-			m_taskGroup = new TaskGroup();
+			await state.ToThreadPool();
 
-			await Data.InitializeAsync(CancellationToken.None);
+			await Data.InitializeAsync(state.CancellationToken).ConfigureAwait(false);
+
+			await state.ToSyncContext();
 
 			MainWindow = new MainWindowViewModel();
-			await MainWindow.OpenSetAsync(new Guid("599d53df-5076-4f1e-af03-0abe36991eba"), CancellationToken.None);
-			await MainWindow.OpenSetAsync(new Guid("04e1a881-9650-4cbb-8781-9f0b31391f83"), CancellationToken.None);
+
+			await MainWindow.OpenSetAsync(new Guid("599d53df-5076-4f1e-af03-0abe36991eba"), state.CancellationToken).ConfigureAwait(false);
+			await MainWindow.OpenSetAsync(new Guid("04e1a881-9650-4cbb-8781-9f0b31391f83"), state.CancellationToken).ConfigureAwait(false);
 		}
 
 		public async Task ShutdownAsync()

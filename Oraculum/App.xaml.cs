@@ -1,4 +1,6 @@
 ﻿using GoldenAnvil.Utility.Logging;
+using GoldenAnvil.Utility.Windows.Async;
+using Microsoft.VisualStudio.Threading;
 using Oraculum.MainWindow;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -12,9 +14,9 @@ namespace Oraculum
 		{
 		}
 
-		protected override async void OnStartup(StartupEventArgs e) => await OnStartupAsync(e);
+		protected override void OnStartup(StartupEventArgs e) => TaskWatcher.Create(c => OnStartupAsync(e, c), AppModel.Instance.TaskGroup);
 
-		private async Task OnStartupAsync(StartupEventArgs e)
+		private async Task OnStartupAsync(StartupEventArgs e, TaskStateController state)
 		{
 			var stopwatch = Stopwatch.StartNew();
 
@@ -25,7 +27,9 @@ namespace Oraculum
 				DefaultValue = FindResource(typeof(Window))
 			});
 
-			await AppModel.Instance.StartupAsync();
+			await AppModel.Instance.StartupAsync(state).ConfigureAwait(false);
+
+			await state.ToSyncContext();
 
 			new MainWindowView(AppModel.Instance.MainWindow).Show();
 

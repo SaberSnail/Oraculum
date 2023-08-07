@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
 using GoldenAnvil.Utility.Windows.Async;
+using Microsoft.VisualStudio.Threading;
 using Oraculum.Data;
 using Oraculum.SetsView;
 using Oraculum.SetView;
@@ -13,10 +14,11 @@ using Oraculum.ViewModels;
 
 namespace Oraculum.MainWindow
 {
-	public sealed class MainWindowViewModel : ViewModelBase
+	public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 	{
 		public MainWindowViewModel()
 		{
+			m_taskGroup = new TaskGroup();
 			AllSets = new SetsViewModel();
 			m_openSets = new ObservableCollection<SetViewModel>();
 			OpenSets = new ReadOnlyObservableCollection<SetViewModel>(m_openSets);
@@ -56,7 +58,7 @@ namespace Oraculum.MainWindow
 					if (m_selectedSet is not null)
 					{
 						m_loadSelectedSetWork?.Cancel();
-						m_loadSelectedSetWork = TaskWatcher.Create(m_selectedSet.LoadTablesIfNeededAsync, AppModel.Instance.TaskGroup);
+						m_loadSelectedSetWork = TaskWatcher.Create(m_selectedSet.LoadTablesIfNeededAsync, m_taskGroup);
 
 						m_selectedSet.PropertyChanged += OnSelectedSetPropertyChanged;
 					}
@@ -88,12 +90,35 @@ namespace Oraculum.MainWindow
 		public void ToggleTableView() =>
 			IsEditTablePanelVisible = !IsEditTablePanelVisible;
 
+		public async Task OpenTableAsync(Guid tableId, TaskStateController state)
+		{
+			await state.ToSyncContext();
+			if (SelectedSet is null || SelectedTable?.Id == tableId)
+				return;
+
+			await m_loadSelectedSetWork!.TaskCompleted.ConfigureAwait(false);
+			if (!await SelectedSet.TryOpenTableAsync(tableId, state).ConfigureAwait(false))
+			{
+				await state.ToSyncContext();
+				SelectedSet = m_openSets[0];
+
+				await m_loadSelectedSetWork.TaskCompleted.ConfigureAwait(false);
+				if (!await SelectedSet.TryOpenTableAsync(tableId, state).ConfigureAwait(false))
+					Log.Error($"Failed to open table \"{tableId}\", table ID not found.");
+			}
+		}
+
 		public async Task OpenSetAsync(Guid setId, CancellationToken cancellationToken)
 		{
 			var data = AppModel.Instance.Data;
 			var setMetadata = await data.GetSetMetadataAsync(setId, cancellationToken);
 			if (setMetadata != null)
 				m_openSets.Add(new SetViewModel(setMetadata.Value));
+		}
+
+		public void Dispose()
+		{
+			DisposableUtility.Dispose(ref m_taskGroup);
 		}
 
 		private void OnSelectedSetPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -104,6 +129,7 @@ namespace Oraculum.MainWindow
 
 		private static ILogSource Log { get; } = LogManager.CreateLogSource(nameof(MainWindowViewModel));
 
+		private TaskGroup m_taskGroup;
 		private bool m_isSetsPanelVisible;
 		private bool m_isEditTablePanelVisible;
 		private ObservableCollection<SetViewModel> m_openSets;

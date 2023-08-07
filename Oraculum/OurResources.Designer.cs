@@ -88,6 +88,24 @@ namespace Oraculum {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Rolled {0}….
+        /// </summary>
+        public static string RollResultKey {
+            get {
+                return ResourceManager.GetString("RollResultKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rolling on {0}….
+        /// </summary>
+        public static string RollResultTable {
+            get {
+                return ResourceManager.GetString("RollResultTable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Roll.
         /// </summary>
         public static string RollTableButtonLabel {

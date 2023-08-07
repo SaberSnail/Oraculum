@@ -64,7 +64,11 @@
 					/>
 			</DockPanel>
 
-			<FlowDocumentScrollViewer VerticalScrollBarVisibility="Auto" Document="{Binding RollLog.Document}" />
+			<FlowDocumentScrollViewer
+			VerticalScrollBarVisibility="Auto"
+			Document="{Binding RollLog.Document}"
+			Typography.NumeralStyle="Lining"
+			/>
 
 		</DockPanel>
 	</DataTemplate>

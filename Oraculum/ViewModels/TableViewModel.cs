@@ -95,7 +95,7 @@ namespace Oraculum.ViewModels
 
 				await state.ToSyncContext();
 
-				m_rows = new RowManager(Title, rows);
+				m_rows = new RowManager(Id, Title, rows);
 
 				m_isLoaded = true;
 			}
@@ -112,7 +112,7 @@ namespace Oraculum.ViewModels
 
 			if (result is not null)
 			{
-				Log.Info($"Finished rolling, got {key} : {result.Message}");
+				Log.Info($"Finished rolling, got {key} : {result.Output}");
 				m_rollLog?.Add(result);
 			}
 		}

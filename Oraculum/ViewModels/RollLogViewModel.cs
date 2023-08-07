@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
+using GoldenAnvil.Utility;
+using GoldenAnvil.Utility.Windows;
 using Oraculum.Engine;
 
 namespace Oraculum.ViewModels
@@ -20,31 +18,32 @@ namespace Oraculum.ViewModels
 
 		public void Add(RollResult result)
 		{
-			if (result.TableTitle != m_lastRollResultTableTitle)
+			if (result.TableId != m_lastRollResultTableId)
 			{
-				var tableParagraph = new Paragraph();
-				tableParagraph.Style = (Style) Application.Current.FindResource("RollResultTableParagraphStyle");
-				tableParagraph.Inlines.Add(new Run("Rolling on "));
-				tableParagraph.Inlines.Add(new Run
-				{
-					Text = result.TableTitle,
-					Style = (Style) Application.Current.FindResource("RollResultTableTitleRunStyle"),
-				});
-				tableParagraph.Inlines.Add(new Run("…"));
+				var tableParagraph = new Paragraph().WithStyle("RollResultTableParagraphStyle");
+				tableParagraph.Inlines.AddRange(TextElementUtility.FormatInlineString(
+					OurResources.RollResultTable,
+					null,
+					new Hyperlink(new Run(result.TableTitle).WithStyle("RollResultTableTitleRunStyle"))
+					{
+						Command = new DelegateCommand(() => AppModel.Instance.OpenTable(result.TableId))
+					},
+					new Run(result.TableTitle).WithStyle("RollResultTableTitleRunStyle")
+					));
 				AddParagraph(tableParagraph, false);
 			}
 
-			var paragraph = new Paragraph();
-			paragraph.Style = (Style) Application.Current.FindResource("RollResultParagraphStyle");
-			paragraph.Inlines.Add(new Run("Rolled "));
-			paragraph.Inlines.Add(new Run
-			{
-				Text = "\n\t" + result.Message,
-				Style = (Style) Application.Current.FindResource("RollResultOutputRunStyle"),
-			});
+			var paragraph = new Paragraph().WithStyle("RollResultParagraphStyle");
+			paragraph.Inlines.AddRange(TextElementUtility.FormatInlineString(
+				OurResources.RollResultKey,
+				null,
+				new Run(result.Key).WithStyle("RollResultKeyRunStyle")
+				));
+			paragraph.Inlines.Add(new LineBreak());
+			paragraph.Inlines.Add(new Run(result.Output).WithStyle("RollResultOutputRunStyle"));
 			AddParagraph(paragraph, true);
 
-			m_lastRollResultTableTitle = result.TableTitle;
+			m_lastRollResultTableId = result.TableId;
 		}
 
 		private void AddParagraph(Paragraph paragraph, bool shouldBringIntoView)
@@ -63,6 +62,6 @@ namespace Oraculum.ViewModels
 			Document.Blocks.Add(paragraph);
 		}
 
-		private string? m_lastRollResultTableTitle;
+		private Guid? m_lastRollResultTableId;
 	}
 }

@@ -22,6 +22,8 @@ namespace Oraculum.ViewModels
 			set => SetPropertyField(value, ref m_isExpanded);
 		}
 
+		public IEnumerable<TreeNodeBase> GetUnfilteredChildren() => m_children;
+
 		public IEnumerable<TreeBranch> GetChildBranches() => m_children.OfType<TreeBranch>();
 
 		public void AddChild(TreeNodeBase child) => m_children.Add(child);

@@ -6,9 +6,4 @@
 	<markupExtensions:FontSize x:Key="DefaultFontSize" Size="12" />
 	<markupExtensions:FontSize x:Key="LargeFontSize" Size="14" />
 
-	<!--<Style TargetType="{x:Type TextBlock}">
-		<Setter Property="Foreground" Value="{DynamicResource FontBrush}" />
-		<Setter Property="FontSize" Value="{DynamicResource DefaultFontSize}" />
-	</Style>-->
-
 </ResourceDictionary>

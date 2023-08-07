@@ -126,6 +126,14 @@
   <data name="RollButtonLabel" xml:space="preserve">
     <value>Roll</value>
   </data>
+  <data name="RollResultKey" xml:space="preserve">
+    <value>Rolled {0}…</value>
+    <comment>{0} is the rolled value</comment>
+  </data>
+  <data name="RollResultTable" xml:space="preserve">
+    <value>Rolling on {0}…</value>
+    <comment>{0} is the name of a table</comment>
+  </data>
   <data name="RollTableButtonLabel" xml:space="preserve">
     <value>Roll</value>
   </data>

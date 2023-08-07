@@ -9,6 +9,7 @@ using GoldenAnvil.Utility.Windows.Async;
 using Microsoft.VisualStudio.Threading;
 using Oraculum.Data;
 using Oraculum.ViewModels;
+using static GoldenAnvil.Utility.Windows.TreeViewSelectionBehavior;
 
 namespace Oraculum.SetView
 {
@@ -89,6 +90,8 @@ namespace Oraculum.SetView
 
 		public ICollectionView Tables { get; }
 
+		public IsDescendantDelegate IsDescendant => TreeNodeUtility.IsDescendant;
+
 		public TreeNodeBase? SelectedTable
 		{
 			get => VerifyAccess(m_selectedTable);
@@ -103,6 +106,18 @@ namespace Oraculum.SetView
 					}
 				}
 			}
+		}
+
+		public async Task<bool> TryOpenTableAsync(Guid tableId, TaskStateController state)
+		{
+			await state.ToSyncContext();
+			var table = FindNearestTable(SelectedTable as TableViewModel, tableId);
+			if (table is not null)
+			{
+				SelectedTable = table;
+				await m_loadSelectedTableWork!.TaskCompleted.ConfigureAwait(false);
+			}
+			return table is not null;
 		}
 
 		public async Task LoadTablesIfNeededAsync(TaskStateController state)
@@ -184,6 +199,46 @@ namespace Oraculum.SetView
 			foreach (var table in m_tables)
 				table.SetCurrentFilter(filter, force);
 			Tables.Refresh();
+		}
+
+		private TableViewModel? FindNearestTable(TableViewModel? current, Guid targetId)
+		{
+			if (current?.Id == targetId)
+				return current;
+
+			var ancestry = new Stack<TreeNodeBase>();
+			if (current is not null)
+			{
+				// Find ancestry of current table
+				foreach (var tableRoot in m_tables)
+				{
+					ancestry = TreeNodeUtility.FindAncestry(tableRoot, node => node == current, false);
+					if (ancestry.Count != 0)
+						break;
+				}
+			}
+			else
+			{
+				// Scan all tables
+				foreach (var tableRoot in m_tables)
+					ancestry.Push(tableRoot);
+			}
+
+			// Find nearest relative with the target ID
+			TableViewModel? target = null;
+			TreeNodeBase? lastCheck = null;
+			while (ancestry.Count != 0)
+			{
+				var node = ancestry.Pop();
+				target = TreeNodeUtility.EnumerateNodes(node, TreeNodeTraversalOrder.BreadthFirst, false, x => x != lastCheck)
+					.OfType<TableViewModel>()
+					.FirstOrDefault(x => x.Id == targetId);
+				if (target is not null)
+					break;
+				lastCheck = node;
+			}
+
+			return target;
 		}
 
 		private static ILogSource Log { get; } = LogManager.CreateLogSource(nameof(SetViewModel));

@@ -20,22 +20,49 @@ namespace Oraculum.ViewModels
 
 		public void Add(RollResult result)
 		{
+			if (result.TableTitle != m_lastRollResultTableTitle)
+			{
+				var tableParagraph = new Paragraph();
+				tableParagraph.Style = (Style) Application.Current.FindResource("RollResultTableParagraphStyle");
+				tableParagraph.Inlines.Add(new Run("Rolling on "));
+				tableParagraph.Inlines.Add(new Run
+				{
+					Text = result.TableTitle,
+					Style = (Style) Application.Current.FindResource("RollResultTableTitleRunStyle"),
+				});
+				tableParagraph.Inlines.Add(new Run("…"));
+				AddParagraph(tableParagraph, false);
+			}
+
 			var paragraph = new Paragraph();
-			paragraph.Inlines.Add(new Run(result.Message));
-			AddParagraph(paragraph);
+			paragraph.Style = (Style) Application.Current.FindResource("RollResultParagraphStyle");
+			paragraph.Inlines.Add(new Run("Rolled "));
+			paragraph.Inlines.Add(new Run
+			{
+				Text = "\n\t" + result.Message,
+				Style = (Style) Application.Current.FindResource("RollResultOutputRunStyle"),
+			});
+			AddParagraph(paragraph, true);
+
+			m_lastRollResultTableTitle = result.TableTitle;
 		}
 
-		private void AddParagraph(Paragraph paragraph)
+		private void AddParagraph(Paragraph paragraph, bool shouldBringIntoView)
 		{
-			paragraph.Loaded += OnParagraphLoaded;
-			static void OnParagraphLoaded(object sender, RoutedEventArgs args)
+			if (shouldBringIntoView)
 			{
-				var p = (Paragraph) sender;
-				p.Loaded -= OnParagraphLoaded;
-				p.BringIntoView();
+				paragraph.Loaded += OnParagraphLoaded;
+				static void OnParagraphLoaded(object sender, RoutedEventArgs args)
+				{
+					var p = (Paragraph) sender;
+					p.Loaded -= OnParagraphLoaded;
+					p.BringIntoView();
+				}
 			}
 
 			Document.Blocks.Add(paragraph);
 		}
+
+		private string? m_lastRollResultTableTitle;
 	}
 }

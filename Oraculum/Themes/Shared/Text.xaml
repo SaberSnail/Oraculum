@@ -4,6 +4,7 @@
 	xmlns:markupExtensions="clr-namespace:GoldenAnvil.Utility.Windows;assembly=GoldenAnvil.Utility.Windows">
 
 	<markupExtensions:FontSize x:Key="DefaultFontSize" Size="12" />
+	<markupExtensions:FontSize x:Key="LargeFontSize" Size="14" />
 
 	<!--<Style TargetType="{x:Type TextBlock}">
 		<Setter Property="Foreground" Value="{DynamicResource FontBrush}" />

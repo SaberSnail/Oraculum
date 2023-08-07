@@ -4,7 +4,9 @@
 
 	<ResourceDictionary.MergedDictionaries>
 		<ResourceDictionary Source="Text.xaml" />
-		
+
+		<ResourceDictionary Source="OutputLog.xaml" />
+
 		<ResourceDictionary Source="Buttons.xaml" />
 		<ResourceDictionary Source="Splitters.xaml" />
 		<ResourceDictionary Source="Windows.xaml" />

@@ -27,7 +27,7 @@ namespace Oraculum.Engine
       };
 		}
 
-		readonly string m_tableTitle;
+		readonly string? m_tableTitle;
     readonly ReadOnlyDictionary<object, string> m_outputLookup;
   }
   public sealed class RollResult

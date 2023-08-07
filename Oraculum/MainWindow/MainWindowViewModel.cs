@@ -69,7 +69,7 @@ namespace Oraculum.MainWindow
 			get => VerifyAccess(m_selectedTable);
 			set
 			{
-				if (SetPropertyField(value, ref m_selectedTable))
+				if (SetPropertyField(value, ref m_selectedTable) && m_selectedTable is not null)
 					m_selectedTable.RollLog = RollLog;
 			}
 		}

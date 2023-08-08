@@ -44,8 +44,6 @@
 				Grid.Row="1"
 				ItemsSource="{Binding Tables}"
 				>
-				<!--utility:TreeViewUtility.SelectedItemChangedCommand="{Binding Converter={x:Static utility:MethodToCommandConverter.Instance}, ConverterParameter=SelectedTableChanged}"
-				>-->
 				<b:Interaction.Behaviors>
 					<utility:TreeViewSelectionBehavior ExpandSelected="True" IsDescendantPredicate="{x:Static viewModels:TreeNodeUtility.IsDescendant}" SelectedItem="{Binding SelectedTable}" />
 				</b:Interaction.Behaviors>

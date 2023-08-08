@@ -7,6 +7,7 @@
     <UseWPF>true</UseWPF>
     <Company>Golden Anvil</Company>
 		<Product>Oraculum</Product>
+		<PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

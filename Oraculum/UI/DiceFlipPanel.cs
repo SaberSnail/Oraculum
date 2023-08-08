@@ -8,6 +8,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
 using GoldenAnvil.Utility.Windows;
@@ -98,8 +99,11 @@ namespace Oraculum.UI
 
 		private static void OnTargetValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			var panel = (DiceFlipPanel) d;
+			_ = Dispatcher.CurrentDispatcher.BeginInvoke(() => OnTargetValueChangedImpl((DiceFlipPanel) d), DispatcherPriority.Loaded);
+		}
 
+		private static void OnTargetValueChangedImpl(DiceFlipPanel panel)
+		{
 			if (panel.m_lastStoryboard is not null)
 			{
 				panel.m_lastStoryboard.Completed -= panel.OnStoryboardCompleted;
@@ -114,11 +118,12 @@ namespace Oraculum.UI
 				face.Border.RenderTransform = panel.GetInitialScaleTransform(face);
 			}
 
-			if (!panel.ShouldAnimate || panel.MinimumValue is null || panel.MaximumValue is null || panel.TargetValue is null)
+			if (!panel.ShouldAnimate || panel.MinimumValue is null || panel.MaximumValue is null || panel.TargetValue is null || !panel.IsVisible)
 			{
 				panel.m_faces[0].SetValue(panel.TargetValue ?? 0);
 				panel.m_faces[^1].SetValue(panel.TargetValue ?? 0);
-				panel.AnimationFinishedCommand?.Execute(panel.AnimationFinishedCommandParameter);
+				if (panel.IsVisible)
+					panel.AnimationFinishedCommand?.Execute(panel.AnimationFinishedCommandParameter);
 				return;
 			}
 

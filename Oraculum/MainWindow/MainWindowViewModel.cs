@@ -53,7 +53,10 @@ namespace Oraculum.MainWindow
 					SelectedTable = null;
 
 					if (oldValue is not null)
+					{
 						oldValue.PropertyChanged -= OnSelectedSetPropertyChanged;
+						oldValue.TableSelected -= OnSelectedTableChanged;
+					}
 
 					if (m_selectedSet is not null)
 					{
@@ -61,6 +64,7 @@ namespace Oraculum.MainWindow
 						m_loadSelectedSetWork = TaskWatcher.Create(m_selectedSet.LoadTablesIfNeededAsync, m_taskGroup);
 
 						m_selectedSet.PropertyChanged += OnSelectedSetPropertyChanged;
+						m_selectedSet.TableSelected += OnSelectedTableChanged;
 					}
 				}
 			}
@@ -125,6 +129,12 @@ namespace Oraculum.MainWindow
 		{
 			if (e.HasChanged(nameof(SetViewModel.SelectedTable)))
 				SelectedTable = m_selectedSet!.SelectedTable as TableViewModel;
+		}
+
+		private void OnSelectedTableChanged(object? sender, GenericEventArgs<TableViewModel> e)
+		{
+			if (!IsEditTablePanelVisible)
+				e.Value.RandomSource.Roll();
 		}
 
 		private static ILogSource Log { get; } = LogManager.CreateLogSource(nameof(MainWindowViewModel));

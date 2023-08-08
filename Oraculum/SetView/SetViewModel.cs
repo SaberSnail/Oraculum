@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
 using GoldenAnvil.Utility.Windows.Async;
 using Microsoft.VisualStudio.Threading;
@@ -29,6 +30,8 @@ namespace Oraculum.SetView
 			Tables = CollectionViewSource.GetDefaultView(m_tables);
 			Tables.Filter = MatchesTableFilter;
 		}
+
+		public event EventHandler<GenericEventArgs<TableViewModel>>? TableSelected;
 
 		public Guid Id
 		{
@@ -102,7 +105,12 @@ namespace Oraculum.SetView
 					if (m_selectedTable is TableViewModel table)
 					{
 						m_loadSelectedTableWork?.Cancel();
-						m_loadSelectedTableWork = TaskWatcher.Create(table.LoadRowsIfNeededAsync, AppModel.Instance.TaskGroup);
+						m_loadSelectedTableWork = TaskWatcher.Create(async state =>
+						{
+							await table.LoadRowsIfNeededAsync(state).ConfigureAwait(false);
+							await state.ToSyncContext();
+							TableSelected.Raise(this, new GenericEventArgs<TableViewModel>(table));
+						}, AppModel.Instance.TaskGroup);
 					}
 				}
 			}

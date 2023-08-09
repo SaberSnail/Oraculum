@@ -14,8 +14,8 @@ namespace Oraculum.Engine
       m_tableId = tableId;
       m_tableTitle = tableTitle;
       m_outputLookup = rows
-      .SelectMany(x => Enumerable.Range(x.Min, x.Max - x.Min + 1).Select(y => KeyValuePair.Create(y, x.Output)))
-      .ToDictionary(x => (object) x.Key, x => x.Value)
+      .SelectMany(x => Enumerable.Range(x.Min, x.Max - x.Min + 1).Select(y => KeyValuePair.Create(y, x)))
+      .ToDictionary(x => (object) x.Key, x => (RowData?) x.Value)
       .AsReadOnly();
     }
 
@@ -27,12 +27,13 @@ namespace Oraculum.Engine
         TableId = m_tableId,
         TableTitle = m_tableTitle,
         Key = key?.ToString() ?? "",
-        Output = value,
+        Output = value?.Output,
+        Next = value?.Next,
       };
 		}
 
     readonly Guid m_tableId;
 		readonly string? m_tableTitle;
-    readonly ReadOnlyDictionary<object, string> m_outputLookup;
+    readonly ReadOnlyDictionary<object, RowData?> m_outputLookup;
   }
 }

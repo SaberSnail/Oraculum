@@ -8,5 +8,6 @@ namespace Oraculum.Engine
     public string? TableTitle { get; init; }
     public string? Key { get; init; }
     public string? Output { get; init; }
+    public Guid? Next { get; init; }
   }
 }

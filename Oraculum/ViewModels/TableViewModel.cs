@@ -22,7 +22,7 @@ namespace Oraculum.ViewModels
 			m_groups = metadata.Groups ?? Array.Empty<string>();
 
 			Title = metadata.Title ?? "";
-			RandomSource = new DiceSourceViewModel((DiceSource) RandomSourceBase.Create(metadata.RandomSource), OnRandomValueDisplayed);
+			RandomSource = new DiceSourceViewModel((DiceSource) RandomSourceBase.Create(metadata.RandomSource), OnRollStarted, OnRandomValueDisplayedAsync);
 		}
 
 		public Guid Id
@@ -106,14 +106,17 @@ namespace Oraculum.ViewModels
 			}
 		}
 
-		private void OnRandomValueDisplayed(object? key)
+		private void OnRollStarted() => m_rollLog?.RollStarted(m_id, Title);
+
+		private async Task OnRandomValueDisplayedAsync(TaskStateController state, object key)
 		{
 			var result = m_rows?.GetOutput(key);
 
 			if (result is not null)
 			{
 				Log.Info($"Finished rolling, got {key} : {result.Output}");
-				m_rollLog?.Add(result);
+				if (m_rollLog is not null)
+					await m_rollLog.AddAsync(state, result).ConfigureAwait(false);
 			}
 		}
 

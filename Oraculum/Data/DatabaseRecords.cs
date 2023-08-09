@@ -26,5 +26,5 @@ namespace Oraculum.Data
 
 	public readonly record struct RandomSourceData(RandomSourceKind Kind, IReadOnlyList<int> Dice);
 
-	public readonly record struct RowData(int Min, int Max, string Output);
+	public readonly record struct RowData(int Min, int Max, string Output, Guid? Next);
 }

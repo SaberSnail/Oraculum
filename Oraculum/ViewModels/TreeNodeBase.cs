@@ -4,7 +4,7 @@ namespace Oraculum.ViewModels
 {
 	public abstract class TreeNodeBase : ViewModelBase
 	{
-		public string? Title
+		public string Title
 		{
 			get => VerifyAccess(m_title);
 			set => SetPropertyField(value, ref m_title);
@@ -50,7 +50,7 @@ namespace Oraculum.ViewModels
 		{
 		}
 
-		private string? m_title;
+		private string m_title;
 		private string? m_currentFilter;
 		private bool? m_lastMatchesFilter;
 	}

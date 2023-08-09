@@ -1,75 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using GoldenAnvil.Utility.Windows.Async;
 using Oraculum.Engine;
 
 namespace Oraculum.ViewModels
 {
-	public class DiceViewModel : ViewModelBase
-  {
-    public DiceViewModel(int maxValue, Action<object?> onValueDisplayed)
-    {
-      MaxValue = maxValue;
-      m_onValueDisplayed = onValueDisplayed ?? throw new ArgumentNullException(nameof(onValueDisplayed));
-
-      ShouldAnimate = false;
-      Value = maxValue;
-      ShouldAnimate = true;
-    }
-
-    public int MaxValue { get; }
-
-		public int Value
-    {
-			get => VerifyAccess(m_value);
-			private set => SetPropertyField(value, ref m_value);
-		}
-
-		public bool ShouldAnimate
-    {
-      get => VerifyAccess(m_shouldAnimate);
-      private set => SetPropertyField(value, ref m_shouldAnimate);
-    }
-
-    public void OnFinalValueDisplayed()
-    {
-      var key = m_lastKey;
-      m_lastKey = null;
-      m_onValueDisplayed(key);
-    }
-
-    public void SetValue(int value, object key)
-    {
-      m_lastKey = key;
-      Value = 0;
-      Value = value;
-    }
-
-		private readonly Action<object?> m_onValueDisplayed;
-
-		private bool m_shouldAnimate;
-    private int m_value;
-    private object? m_lastKey;
-	}
-
 	public class DiceSourceViewModel : ViewModelBase
   {
-    public DiceSourceViewModel(DiceSource source, Action<object?> onKeyGenerated)
+    public DiceSourceViewModel(DiceSource source, Action onRollStarted, Func<TaskStateController, object, Task> onKeyGenerated)
     {
       m_diceSource = source;
+      m_onRollStarted = onRollStarted;
       m_onKeyGenerated = onKeyGenerated;
 
-      Dice = m_diceSource.Dice.Select(x => new DiceViewModel(x, OnValueDisplayed)).ToArray();
+      Dice = m_diceSource.Dice.Select(x => new DiceViewModel(x, OnValueDisplayedAsync)).ToArray();
     }
 
-		private void OnValueDisplayed(object? key)
+		private async Task OnValueDisplayedAsync(TaskStateController state, object key)
 		{
 			if (key == m_lastKey)
       {
         m_valueDisplayedCount++;
         if (m_valueDisplayedCount == Dice.Count)
         {
-          m_onKeyGenerated(m_lastKey);
+          await m_onKeyGenerated(state, m_lastKey).ConfigureAwait(false);
           m_lastKey = null;
         }
       }
@@ -79,6 +35,7 @@ namespace Oraculum.ViewModels
 
     public void Roll()
     {
+      m_onRollStarted();
       m_valueDisplayedCount = 0;
       var (key, values) = m_diceSource.GenerateResult();
       m_lastKey = key;
@@ -89,7 +46,8 @@ namespace Oraculum.ViewModels
     }
 
     private readonly DiceSource m_diceSource;
-    private readonly Action<object?> m_onKeyGenerated;
+    private readonly Action m_onRollStarted;
+    private readonly Func<TaskStateController, object, Task> m_onKeyGenerated;
 
     private int m_valueDisplayedCount;
     private object? m_lastKey;

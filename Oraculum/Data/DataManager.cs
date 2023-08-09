@@ -70,6 +70,14 @@ namespace Oraculum.Data
 			return metadatas;
 		}
 
+		public async Task<TableMetadata?> GetTableMetadataAsync(Guid tableId, CancellationToken cancellationToken)
+		{
+			using var connector = CreateConnector();
+
+			var metadata = await connector.Command(Sql.Format($"select Metadata from TableMetadata where TableId = {tableId}")).QuerySingleAsync<byte[]>(cancellationToken).ConfigureAwait(false);
+			return metadata is null ? null : Serializer.Deserialize<TableMetadata>(new ReadOnlySpan<byte>(metadata));
+		}
+
 		public async Task<IReadOnlyList<TableMetadata>> GetAllTableMetadataAsync(CancellationToken cancellationToken)
 		{
 			using var connector = CreateConnector();
@@ -420,48 +428,48 @@ namespace Oraculum.Data
 				},
 				var id when id == s_oracleCustomAlmostCertain => new[]
 				{
-					new RowData { Min = 1, Max = 1, Output = "no, and..." },
+					new RowData { Min = 1, Max = 1, Output = "no, and...", Next = s_action1 },
 					new RowData { Min = 2, Max = 9, Output = "no" },
-					new RowData { Min = 10, Max = 10, Output = "no, but..." },
-					new RowData { Min = 11, Max = 19, Output = "yes, but..." },
+					new RowData { Min = 10, Max = 10, Output = "no, but...", Next = s_action1  },
+					new RowData { Min = 11, Max = 19, Output = "yes, but...", Next = s_action1  },
 					new RowData { Min = 20, Max = 91, Output = "yes" },
-					new RowData { Min = 92, Max = 100, Output = "yes, and..." },
+					new RowData { Min = 92, Max = 100, Output = "yes, and...", Next = s_action1  },
 				},
 				var id when id == s_oracleCustomLikely => new[]
 				{
-					new RowData { Min = 1, Max = 2, Output = "no, and..." },
+					new RowData { Min = 1, Max = 2, Output = "no, and...", Next = s_action1  },
 					new RowData { Min = 3, Max = 23, Output = "no" },
-					new RowData { Min = 24, Max = 25, Output = "no, but..." },
-					new RowData { Min = 26, Max = 32, Output = "yes, but..." },
+					new RowData { Min = 24, Max = 25, Output = "no, but...", Next = s_action1  },
+					new RowData { Min = 26, Max = 32, Output = "yes, but...", Next = s_action1  },
 					new RowData { Min = 33, Max = 93, Output = "yes" },
-					new RowData { Min = 94, Max = 100, Output = "yes, and..." },
+					new RowData { Min = 94, Max = 100, Output = "yes, and...", Next = s_action1  },
 				},
 				var id when id == s_oracleCustom5050 => new[]
 				{
-					new RowData { Min = 1, Max = 5, Output = "no, and..." },
+					new RowData { Min = 1, Max = 5, Output = "no, and...", Next = s_action1  },
 					new RowData { Min = 6, Max = 45, Output = "no" },
-					new RowData { Min = 46, Max = 50, Output = "no, but..." },
-					new RowData { Min = 51, Max = 55, Output = "yes, but..." },
+					new RowData { Min = 46, Max = 50, Output = "no, but...", Next = s_action1  },
+					new RowData { Min = 51, Max = 55, Output = "yes, but...", Next = s_action1  },
 					new RowData { Min = 56, Max = 95, Output = "yes" },
-					new RowData { Min = 96, Max = 100, Output = "yes, and..." },
+					new RowData { Min = 96, Max = 100, Output = "yes, and...", Next = s_action1  },
 				},
 				var id when id == s_oracleCustomUnlikely => new[]
 				{
-					new RowData { Min = 1, Max = 7, Output = "no, and..." },
+					new RowData { Min = 1, Max = 7, Output = "no, and...", Next = s_action1  },
 					new RowData { Min = 8, Max = 68, Output = "no" },
-					new RowData { Min = 69, Max = 75, Output = "no, but..." },
-					new RowData { Min = 76, Max = 77, Output = "yes, but..." },
+					new RowData { Min = 69, Max = 75, Output = "no, but...", Next = s_action1  },
+					new RowData { Min = 76, Max = 77, Output = "yes, but...", Next = s_action1  },
 					new RowData { Min = 78, Max = 98, Output = "yes" },
-					new RowData { Min = 99, Max = 100, Output = "yes, and..." },
+					new RowData { Min = 99, Max = 100, Output = "yes, and...", Next = s_action1  },
 				},
 				var id when id == s_oracleCustomSmallChance => new[]
 				{
-					new RowData { Min = 1, Max = 9, Output = "no, and..." },
+					new RowData { Min = 1, Max = 9, Output = "no, and...", Next = s_action1  },
 					new RowData { Min = 10, Max = 81, Output = "no" },
-					new RowData { Min = 82, Max = 90, Output = "no, but..." },
-					new RowData { Min = 91, Max = 91, Output = "yes, but..." },
+					new RowData { Min = 82, Max = 90, Output = "no, but...", Next = s_action1  },
+					new RowData { Min = 91, Max = 91, Output = "yes, but...", Next = s_action1  },
 					new RowData { Min = 92, Max = 99, Output = "yes" },
-					new RowData { Min = 100, Max = 100, Output = "yes, and..." },
+					new RowData { Min = 100, Max = 100, Output = "yes, and...", Next = s_action1  },
 				},
 				var id when id == s_action1 => new[]
 				{

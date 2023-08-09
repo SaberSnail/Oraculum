@@ -4,7 +4,7 @@
     * Provides string output
     * Provides iteration
 * Add import from file
-* Clicking on two tables right after each other doesn't cancel the first roll and doesn't display the second table
+* Clicking on two tables right after each other doesn't cancel the first roll
 
 # DONE
 * Link table name in output to selecting table

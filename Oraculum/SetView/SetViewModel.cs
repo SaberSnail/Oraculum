@@ -97,33 +97,16 @@ namespace Oraculum.SetView
 			get => VerifyAccess(m_selectedTableNode);
 			set
 			{
+				var oldSelectedNode = m_selectedTableNode;
 				if (SetPropertyField(value, ref m_selectedTableNode))
 				{
-					if (value is null)
-						SelectedTable = null;
-					else if (value is TableViewModel table)
-						SelectedTable = table;
-				}
-			}
-		}
+					if (oldSelectedNode is not null)
+						oldSelectedNode.IsSelected = false;
+					if (value is not null)
+						value.IsSelected = true;
 
-		public TreeNodeBase? SelectedTable
-		{
-			get => VerifyAccess(m_selectedTable);
-			set
-			{
-				if (SetPropertyField(value, ref m_selectedTable))
-				{
-					if (m_selectedTable is TableViewModel table)
-					{
-						m_loadSelectedTableWork?.Cancel();
-						m_loadSelectedTableWork = TaskWatcher.Create(async state =>
-						{
-							await table.LoadRowsIfNeededAsync(state).ConfigureAwait(false);
-							await state.ToSyncContext();
-							TableSelected.Raise(this, new GenericEventArgs<TableViewModel>(table));
-						}, AppModel.Instance.TaskGroup);
-					}
+					if (value is TableViewModel table)
+						SetSelectedTable(table);
 				}
 			}
 		}
@@ -131,10 +114,10 @@ namespace Oraculum.SetView
 		public async Task<bool> TryOpenTableAsync(Guid tableId, TaskStateController state)
 		{
 			await state.ToSyncContext();
-			var table = FindNearestTable(SelectedTable as TableViewModel, tableId);
+			var table = FindNearestTable(SelectedTableNode, tableId);
 			if (table is not null)
 			{
-				SelectedTable = table;
+				SelectedTableNode = table;
 				await m_loadSelectedTableWork!.TaskCompleted.ConfigureAwait(false);
 			}
 			return table is not null;
@@ -186,8 +169,6 @@ namespace Oraculum.SetView
 				RefreshTablesFilter(true);
 			}
 		}
-
-		public void SelectedTableChanged(TreeNodeBase table) => SelectedTable = table;
 
 		private TreeBranch? GetMatchingBranch(string branchTitle, TreeNodeBase? parentNode)
 		{
@@ -253,10 +234,10 @@ namespace Oraculum.SetView
 			Tables.Refresh();
 		}
 
-		private TableViewModel? FindNearestTable(TableViewModel? current, Guid targetId)
+		private TableViewModel? FindNearestTable(TreeNodeBase? current, Guid targetId)
 		{
-			if (current?.Id == targetId)
-				return current;
+			if (current is TableViewModel table && table.Id == targetId)
+				return table;
 
 			List<TreeNodeBase> nodesToCheck = m_tables.Reverse<TreeNodeBase>().ToList();
 			if (current is not null)
@@ -282,6 +263,18 @@ namespace Oraculum.SetView
 			return target;
 		}
 
+		private void SetSelectedTable(TableViewModel table)
+		{
+			var capturedTable = table;
+			m_loadSelectedTableWork?.Cancel();
+			m_loadSelectedTableWork = TaskWatcher.Create(async state =>
+			{
+				await capturedTable.LoadRowsIfNeededAsync(state).ConfigureAwait(false);
+				await state.ToSyncContext();
+				TableSelected.Raise(this, new GenericEventArgs<TableViewModel>(capturedTable));
+			}, AppModel.Instance.TaskGroup);
+		}
+
 		private static ILogSource Log { get; } = LogManager.CreateLogSource(nameof(SetViewModel));
 
 		private readonly List<TreeNodeBase> m_tables;
@@ -295,7 +288,6 @@ namespace Oraculum.SetView
 		private string m_title;
 		private bool m_isWorking;
 		private bool m_isLoaded;
-		private TreeNodeBase? m_selectedTable;
 		private TaskWatcher? m_loadSelectedTableWork;
 		private string? m_tableFilter;
 		private TreeNodeBase? m_selectedTableNode;

@@ -127,8 +127,8 @@ namespace Oraculum.MainWindow
 
 		private void OnSelectedSetPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
-			if (e.HasChanged(nameof(SetViewModel.SelectedTable)))
-				SelectedTable = m_selectedSet!.SelectedTable as TableViewModel;
+			if (e.HasChanged(nameof(SetViewModel.SelectedTableNode)))
+				SelectedTable = m_selectedSet!.SelectedTableNode as TableViewModel;
 		}
 
 		private void OnSelectedTableChanged(object? sender, GenericEventArgs<TableViewModel> e)

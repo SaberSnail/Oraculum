@@ -10,7 +10,6 @@ using GoldenAnvil.Utility.Windows.Async;
 using Microsoft.VisualStudio.Threading;
 using Oraculum.Data;
 using Oraculum.ViewModels;
-using static GoldenAnvil.Utility.Windows.TreeViewSelectionBehavior;
 
 namespace Oraculum.SetView
 {
@@ -93,7 +92,20 @@ namespace Oraculum.SetView
 
 		public ICollectionView Tables { get; }
 
-		public IsDescendantDelegate IsDescendant => TreeNodeUtility.IsDescendant;
+		public TreeNodeBase? SelectedTableNode
+		{
+			get => VerifyAccess(m_selectedTableNode);
+			set
+			{
+				if (SetPropertyField(value, ref m_selectedTableNode))
+				{
+					if (value is null)
+						SelectedTable = null;
+					else if (value is TableViewModel table)
+						SelectedTable = table;
+				}
+			}
+		}
 
 		public TreeNodeBase? SelectedTable
 		{
@@ -147,7 +159,7 @@ namespace Oraculum.SetView
 
 				await state.ToSyncContext();
 
-				m_tables.Clear();
+				ClearTables();
 				foreach (var table in tables)
 				{
 					TreeBranch? parent = null;
@@ -185,8 +197,20 @@ namespace Oraculum.SetView
 			return items.FirstOrDefault(x => x.Title == branchTitle);
 		}
 
+		private void ClearTables()
+		{
+			foreach (var table in m_tables)
+			{
+				table.PropertyChanged -= OnTablePropertyChanged;
+				table.PropertyChanging -= OnTablePropertyChanging;
+			}
+			m_tables.Clear();
+		}
+
 		private void AddItemToTables(TreeNodeBase item, TreeBranch? parent)
 		{
+			item.PropertyChanged += OnTablePropertyChanged;
+			item.PropertyChanging += OnTablePropertyChanging;
 			if (parent is null)
 			{
 				m_tables.Add(item);
@@ -196,6 +220,26 @@ namespace Oraculum.SetView
 				parent.AddChild(item);
 				if (item is TreeBranch)
 					parent.IsExpanded = true;
+			}
+		}
+
+		private void OnTablePropertyChanging(object ?sender, PropertyChangingEventArgs e)
+		{
+			var node = (TreeNodeBase) sender!;
+			if (e.IsChanging(nameof(TreeNodeBase.IsSelected)))
+			{
+				if (!node.IsSelected)
+					SelectedTableNode = null;
+			}
+		}
+
+		private void OnTablePropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			var node = (TreeNodeBase) sender!;
+			if (e.HasChanged(nameof(TreeNodeBase.IsSelected)))
+			{
+				if (node.IsSelected)
+					SelectedTableNode = node;
 			}
 		}
 
@@ -214,30 +258,19 @@ namespace Oraculum.SetView
 			if (current?.Id == targetId)
 				return current;
 
-			var ancestry = new Stack<TreeNodeBase>();
+			List<TreeNodeBase> nodesToCheck = m_tables.Reverse<TreeNodeBase>().ToList();
 			if (current is not null)
 			{
-				// Find ancestry of current table
-				foreach (var tableRoot in m_tables)
-				{
-					ancestry = TreeNodeUtility.FindAncestry(tableRoot, node => node == current, false);
-					if (ancestry.Count != 0)
-						break;
-				}
-			}
-			else
-			{
-				// Scan all tables
-				foreach (var tableRoot in m_tables)
-					ancestry.Push(tableRoot);
+				var ancesters = TreeNodeUtility.GetAncesters(current);
+				nodesToCheck.Remove(ancesters[0]);
+				nodesToCheck.AddRange(ancesters);
 			}
 
 			// Find nearest relative with the target ID
 			TableViewModel? target = null;
 			TreeNodeBase? lastCheck = null;
-			while (ancestry.Count != 0)
+			foreach (var node in nodesToCheck.Reverse<TreeNodeBase>())
 			{
-				var node = ancestry.Pop();
 				target = TreeNodeUtility.EnumerateNodes(node, TreeNodeTraversalOrder.BreadthFirst, false, x => x != lastCheck)
 					.OfType<TableViewModel>()
 					.FirstOrDefault(x => x.Id == targetId);
@@ -265,5 +298,6 @@ namespace Oraculum.SetView
 		private TreeNodeBase? m_selectedTable;
 		private TaskWatcher? m_loadSelectedTableWork;
 		private string? m_tableFilter;
+		private TreeNodeBase? m_selectedTableNode;
 	}
 }

@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Data;
+using GoldenAnvil.Utility;
 
 namespace Oraculum.ViewModels
 {
@@ -26,7 +28,27 @@ namespace Oraculum.ViewModels
 
 		public IEnumerable<TreeBranch> GetChildBranches() => m_children.OfType<TreeBranch>();
 
-		public void AddChild(TreeNodeBase child) => m_children.Add(child);
+		public void AddChild(TreeNodeBase child)
+		{
+			VerifyAccess();
+
+			if (child.Parent is not null)
+				child.Parent.RemoveChild(child);
+
+			child.Parent = this;
+			m_children.Add(child);
+			child.PropertyChanged += OnChildPropertyChanged;
+		}
+
+		public void RemoveChild(TreeNodeBase child)
+		{
+			VerifyAccess();
+			if (m_children.Remove(child))
+			{
+				child.Parent = null;
+				child.PropertyChanged -= OnChildPropertyChanged;
+			}
+		}
 
 		protected override bool MatchesCurrentFilterCore() =>
 			base.MatchesCurrentFilterCore() || m_children.Any(x => x.MatchesCurrentFilter());
@@ -40,6 +62,15 @@ namespace Oraculum.ViewModels
 			foreach (var child in m_children)
 				child.SetCurrentFilter(adjustedFilterText, force);
 			Children.Refresh();
+		}
+
+		private void OnChildPropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			var child = (TreeNodeBase) sender!;
+			if (e.HasChanged(nameof(IsSelected)) && child.IsSelected)
+				IsExpanded = true;
+			else if (e.HasChanged(nameof(IsExpanded)) && ((TreeBranch) child).IsExpanded)
+				IsExpanded = true;
 		}
 
 		private readonly List<TreeNodeBase> m_children;

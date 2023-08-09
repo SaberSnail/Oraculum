@@ -44,10 +44,6 @@
 				Grid.Row="1"
 				ItemsSource="{Binding Tables}"
 				>
-				<b:Interaction.Behaviors>
-					<utility:TreeViewSelectionBehavior ExpandSelected="True" IsDescendantPredicate="{x:Static viewModels:TreeNodeUtility.IsDescendant}" SelectedItem="{Binding SelectedTable}" />
-				</b:Interaction.Behaviors>
-
 				<TreeView.ItemTemplateSelector>
 					<utility:TypeDataTemplateSelector>
 						<utility:TypeDataTemplate Type="{x:Type viewModels:TreeBranch}" Template="{StaticResource TableBranchTemplate}" />
@@ -60,10 +56,13 @@
 						<utility:TypeStyle Type="{x:Type viewModels:TreeBranch}">
 							<Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource {x:Type TreeViewItem}}">
 								<Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+								<Setter Property="IsSelected" Value="{Binding IsSelected}" />
 							</Style>
 						</utility:TypeStyle>
 						<utility:TypeStyle Type="{x:Type viewModels:TableViewModel}">
-							<Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource {x:Type TreeViewItem}}" />
+							<Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+								<Setter Property="IsSelected" Value="{Binding IsSelected}" />
+							</Style>
 						</utility:TypeStyle>
 					</utility:TypeStyleSelector>
 				</TreeView.ItemContainerStyleSelector>

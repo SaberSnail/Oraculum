@@ -4,9 +4,21 @@ namespace Oraculum.ViewModels
 {
 	public abstract class TreeNodeBase : ViewModelBase
 	{
+		public TreeBranch? Parent
+		{
+			get => VerifyAccess(m_parent);
+			set => SetPropertyField(value, ref m_parent);
+		}
+
+		public bool IsSelected
+		{
+			get => VerifyAccess(m_isSelected);
+			set => SetPropertyField(value, ref m_isSelected);
+		}
+
 		public string Title
 		{
-			get => VerifyAccess(m_title);
+			get => VerifyAccess(m_title ?? "");
 			set => SetPropertyField(value, ref m_title);
 		}
 
@@ -50,7 +62,9 @@ namespace Oraculum.ViewModels
 		{
 		}
 
-		private string m_title;
+		private TreeBranch? m_parent;
+		private bool m_isSelected;
+		private string? m_title;
 		private string? m_currentFilter;
 		private bool? m_lastMatchesFilter;
 	}

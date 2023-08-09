@@ -1,39 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using static GoldenAnvil.Utility.Windows.TreeViewSelectionBehavior;
 
 namespace Oraculum.ViewModels
 {
 	public static class TreeNodeUtility
 	{
-		public static IsDescendantDelegate IsDescendant => IsDescendantImpl;
-
-		private static bool IsDescendantImpl(object item, object descendentCandidate)
+		public static IReadOnlyList<TreeNodeBase> GetAncesters(TreeNodeBase node)
 		{
-			if (item is TreeNodeBase rootNode)
+			var ancestry = new Queue<TreeNodeBase>();
+			var currentNode = node;
+			while (currentNode is not null)
 			{
-				foreach (var node in EnumerateNodes(rootNode, TreeNodeTraversalOrder.BreadthFirst, false, null))
-				{
-					if (node == descendentCandidate)
-						return true;
-				}
+				ancestry.Enqueue(currentNode);
+				currentNode = currentNode.Parent;
 			}
-			return false;
-		}
-
-		public static Stack<TreeNodeBase> FindAncestry(TreeNodeBase root, Func<TreeNodeBase, bool> predicate, bool withFilter)
-		{
-			var ancestry = new Stack<TreeNodeBase>();
-			FindNode(root, predicate, withFilter, ancestry);
-			return ancestry;
+			return ancestry.ToList();
 		}
 
 		public static IEnumerable<TreeNodeBase> EnumerateNodes(TreeNodeBase root, TreeNodeTraversalOrder order, bool onlyVisible, Func<TreeNodeBase, bool>? filterPredicate)
 		{
 			object nextNodes = order is TreeNodeTraversalOrder.BreadthFirst ? new Queue<TreeNodeBase>() :
-				order is TreeNodeTraversalOrder.DepthFirst ? new Stack<TreeNodeBase>() :
-				throw new NotImplementedException($"Unhandled traversal order \"{order}\".");
+				new Stack<TreeNodeBase>();
 			AddNodeToScan(nextNodes, root);
 
 			while (HasNodeToScan(nextNodes))
@@ -50,30 +38,6 @@ namespace Oraculum.ViewModels
 					}
 				}
 			}
-		}
-
-		private static bool FindNode(TreeNodeBase root, Func<TreeNodeBase, bool> predicate, bool withFilter, Stack<TreeNodeBase> ancestry)
-		{
-			ancestry.Push(root);
-			if (predicate.Invoke(root))
-				return true;
-
-			var foundNode = false;
-			if (root is TreeBranch branch)
-			{
-				var children = withFilter ? branch.Children.OfType<TreeNodeBase>() : branch.GetUnfilteredChildren();
-				foreach (var child in children)
-				{
-					foundNode = FindNode(child, predicate, withFilter, ancestry);
-					if (foundNode)
-						break;
-				}
-			}
-
-			if (!foundNode)
-				ancestry.Pop();
-
-			return foundNode;
 		}
 
 		private static void AddNodeToScan<T>(T nodesToScan, TreeNodeBase node)

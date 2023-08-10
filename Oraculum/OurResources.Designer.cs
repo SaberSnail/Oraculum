@@ -79,6 +79,15 @@ namespace Oraculum {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Import Table….
+        /// </summary>
+        public static string ImportTable {
+            get {
+                return ResourceManager.GetString("ImportTable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Roll.
         /// </summary>
         public static string RollButtonLabel {

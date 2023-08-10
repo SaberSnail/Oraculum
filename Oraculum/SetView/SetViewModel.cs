@@ -13,16 +13,17 @@ using Oraculum.ViewModels;
 
 namespace Oraculum.SetView
 {
-	public sealed class SetViewModel : ViewModelBase
+	public sealed class SetViewModel : ViewModelBase, IDisposable
 	{
 		public SetViewModel(SetMetadata metadata)
 		{
+			m_taskGroup = new TaskGroup();
 			m_id = metadata.Id;
 			m_author = metadata.Author ?? "";
 			m_version = metadata.Version;
 			m_created = metadata.Created;
 			m_modified = metadata.Modified;
-			m_groups = metadata.Groups ?? Array.Empty<string>();
+			m_groups = metadata.Groups;
 			m_title = metadata.Title ?? "";
 
 			m_tables = new List<TreeNodeBase>();
@@ -111,6 +112,31 @@ namespace Oraculum.SetView
 			}
 		}
 
+		public void ImportTable()
+		{
+			m_importTableWork?.Cancel();
+			m_importTableWork = TaskWatcher.Create(ImportTableAsync, m_taskGroup);
+		}
+
+		private async Task ImportTableAsync(TaskStateController state)
+		{
+			await state.ToSyncContext();
+
+			var dialog = new Microsoft.Win32.OpenFileDialog
+			{
+				// Filter = "All Files (*.*)|*.*",
+				Title = OurResources.ImportTable,
+			};
+			var result = dialog.ShowDialog();
+			if (result == true)
+			{
+				var fileName = dialog.FileName;
+				Log.Info($"Importing table: {fileName}");
+				var (metadata, rows) = await DataManagerUtility.CreateTableDataAsync(state, fileName).ConfigureAwait(false);
+				await AppModel.Instance.Data.AddTableAsync(metadata, rows, state.CancellationToken).ConfigureAwait(false);
+			}
+		}
+
 		public async Task<bool> TryOpenTableAsync(Guid tableId, TaskStateController state)
 		{
 			await state.ToSyncContext();
@@ -168,6 +194,11 @@ namespace Oraculum.SetView
 				IsWorking = false;
 				RefreshTablesFilter(true);
 			}
+		}
+
+		public void Dispose()
+		{
+			DisposableUtility.Dispose(ref m_taskGroup);
 		}
 
 		private TreeBranch? GetMatchingBranch(string branchTitle, TreeNodeBase? parentNode)
@@ -272,13 +303,13 @@ namespace Oraculum.SetView
 				await capturedTable.LoadRowsIfNeededAsync(state).ConfigureAwait(false);
 				await state.ToSyncContext();
 				TableSelected.Raise(this, new GenericEventArgs<TableViewModel>(capturedTable));
-			}, AppModel.Instance.TaskGroup);
+			}, m_taskGroup);
 		}
 
 		private static ILogSource Log { get; } = LogManager.CreateLogSource(nameof(SetViewModel));
 
 		private readonly List<TreeNodeBase> m_tables;
-
+		private TaskGroup m_taskGroup;
 		private Guid m_id;
 		private string m_author;
 		private int m_version;
@@ -289,6 +320,7 @@ namespace Oraculum.SetView
 		private bool m_isWorking;
 		private bool m_isLoaded;
 		private TaskWatcher? m_loadSelectedTableWork;
+		private TaskWatcher? m_importTableWork;
 		private string? m_tableFilter;
 		private TreeNodeBase? m_selectedTableNode;
 	}

@@ -106,6 +106,47 @@ namespace Oraculum.Data
 			return metadatas;
 		}
 
+		public async Task<HashSet<string>> GetAllTableTitlesAsync(CancellationToken cancellationToken)
+		{
+			using var connector = CreateConnector();
+
+			var metadataStreams = await connector.Command("select Metadata from TableMetadata").QueryAsync<byte[]>(cancellationToken).ConfigureAwait(false);
+			return metadataStreams
+				.Select(x => Serializer.Deserialize<TableMetadata>(new ReadOnlySpan<byte>(x)).Title)
+				.ToHashSet();
+		}
+
+		public async Task AddTableAsync(TableMetadata metadata, IEnumerable<RowData> rows, CancellationToken cancellationToken)
+		{
+			using var connector = CreateConnector();
+
+			using var transaction = await connector.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+			await AddTableImplAsync(connector, metadata, rows, cancellationToken).ConfigureAwait(false);
+			await connector.CommitTransactionAsync(cancellationToken).ConfigureAwait(false);
+		}
+
+		private static async Task<long> AddTableImplAsync(DbConnector connector, TableMetadata metadata, IEnumerable<RowData> rows, CancellationToken cancellationToken)
+		{
+			using var stream = new MemoryStream();
+			Serializer.Serialize(stream, metadata);
+
+			var dbId = await connector.Command(Sql.Format($@"
+					insert into TableMetadata (Metadata, TableId) values ({stream.ToArray()}, {metadata.Id}) returning RecordId
+				")).QuerySingleAsync<long>(cancellationToken).ConfigureAwait(false);
+
+			foreach (var row in rows)
+			{
+				using var rowStream = new MemoryStream();
+				Serializer.Serialize(rowStream, row);
+
+				await connector.Command(Sql.Format($@"
+						insert into RowData (TableRecordId, Data) values ({dbId}, {rowStream.ToArray()})
+					")).ExecuteAsync(cancellationToken).ConfigureAwait(false);
+			}
+
+			return dbId;
+		}
+
 		private static DbConnector CreateConnector() =>
 			DbConnector.Create(new SqliteConnection(CreateConnectionString()), s_connectorSettings);
 
@@ -202,24 +243,8 @@ namespace Oraculum.Data
 			var tables = GetTableMetadatas();
 			foreach (var table in tables)
 			{
-				using var stream = new MemoryStream();
-				Serializer.Serialize(stream, table);
-
-				var dbId = await connector.Command(Sql.Format($@"
-					insert into TableMetadata (Metadata, TableId) values ({stream.ToArray()}, {table.Id}) returning RecordId
-				")).QuerySingleAsync<long>(cancellationToken).ConfigureAwait(false);
+				var dbId = await AddTableImplAsync(connector, table, GetRowDatas(table.Id), cancellationToken).ConfigureAwait(false);
 				tableIdToDbId.Add(table.Id, dbId);
-
-				var rows = GetRowDatas(table.Id);
-				foreach (var row in rows)
-				{
-					using var rowStream = new MemoryStream();
-					Serializer.Serialize(rowStream, row);
-
-					await connector.Command(Sql.Format($@"
-						insert into RowData (TableRecordId, Data) values ({dbId}, {rowStream.ToArray()})
-					")).ExecuteAsync(cancellationToken).ConfigureAwait(false);
-				}
 			}
 
 			var sets = GetSetMetadatas();

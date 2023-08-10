@@ -19,7 +19,7 @@ namespace Oraculum.ViewModels
 			m_version = metadata.Version;
 			m_created = metadata.Created;
 			m_modified = metadata.Modified;
-			m_groups = metadata.Groups ?? Array.Empty<string>();
+			m_groups = metadata.Groups;
 
 			Title = metadata.Title ?? "";
 			RandomSource = new DiceSourceViewModel((DiceSource) RandomSourceBase.Create(metadata.RandomSource), OnRollStarted, OnRandomValueDisplayedAsync);

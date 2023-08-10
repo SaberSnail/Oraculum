@@ -122,6 +122,10 @@ namespace Oraculum.MainWindow
 
 		public void Dispose()
 		{
+			foreach (var set in m_openSets)
+				set.Dispose();
+			m_openSets.Clear();
+
 			DisposableUtility.Dispose(ref m_taskGroup);
 		}
 

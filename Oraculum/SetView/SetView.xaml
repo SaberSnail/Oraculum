@@ -58,11 +58,8 @@
 					VerticalAlignment="Center"
 					Padding="2"
 					Text="{Binding TableFilter, UpdateSourceTrigger=PropertyChanged}"
-					>
-					<controls:CustomTextBox.Hint>
-						<TextBlock Foreground="{DynamicResource FontLightBrush}" Text="{x:Static oraculum:OurResources.Filter}" />
-					</controls:CustomTextBox.Hint>
-				</controls:CustomTextBox>
+					Hint="{x:Static oraculum:OurResources.Filter}"
+					/>
 			</DockPanel>
 
 			<TreeView

@@ -8,7 +8,7 @@
 	<Application.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
-				<ResourceDictionary Source="pack://application:,,,/GoldenAnvil.Utility.Windows;component/Theme/Default.xaml" />
+				<ResourceDictionary Source="pack://application:,,,/GoldenAnvil.Utility.Windows;component/Themes/Generic.xaml" />
 				<ResourceDictionary Source="Themes/Default/Default.xaml" />
 				<ResourceDictionary Source="Themes/Shared/Shared.xaml" />
 

@@ -8,7 +8,7 @@
 	xmlns:local="clr-namespace:Oraculum.MainWindow"
 	xmlns:oraculum="clr-namespace:Oraculum"
 	xmlns:system="clr-namespace:System;assembly=mscorlib"
-	xmlns:theme="clr-namespace:GoldenAnvil.Utility.Windows.Theme;assembly=GoldenAnvil.Utility.Windows"
+	xmlns:themes="clr-namespace:GoldenAnvil.Utility.Windows.Themes;assembly=GoldenAnvil.Utility.Windows"
 	xmlns:utility="clr-namespace:GoldenAnvil.Utility.Windows;assembly=GoldenAnvil.Utility.Windows"
 	mc:Ignorable="d"
 	Title="MainWindow" Height="450" Width="600">
@@ -104,7 +104,7 @@
 	</Window.Resources>
 
 	<ContentPresenter
-		theme:ThemesUtility.CurrentThemeUrl="{Binding Source={x:Static oraculum:AppModel.Instance}, Path=CurrentTheme}"
+		themes:ThemesUtility.CurrentThemeUrl="{Binding Source={x:Static oraculum:AppModel.Instance}, Path=CurrentTheme}"
 		Focusable="False"
 		Content="{Binding ElementName=ThisView, Path=ViewModel}" />
 </Window>

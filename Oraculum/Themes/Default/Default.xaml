@@ -13,9 +13,11 @@
 	<SolidColorBrush x:Key="ContentBackgroundHighContrastBrush" Color="{StaticResource ContentBackgroundHighContrastColor}" />
 
 	<Color x:Key="FontColor">#111111</Color>
+	<Color x:Key="FontLightColor">#555555</Color>
 	<Color x:Key="FontDisabledColor">#777777</Color>
 	
 	<SolidColorBrush x:Key="FontBrush" Color="{StaticResource FontColor}" />
+	<SolidColorBrush x:Key="FontLightBrush" Color="{StaticResource FontLightColor}" />
 	<SolidColorBrush x:Key="FontDisabledBrush" Color="{StaticResource FontDisabledColor}" />
 
 	<!-- Controls -->

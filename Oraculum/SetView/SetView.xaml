@@ -5,6 +5,7 @@
 	xmlns:oraculum="clr-namespace:Oraculum"
 	xmlns:viewModels="clr-namespace:Oraculum.ViewModels"
 	xmlns:utility="clr-namespace:GoldenAnvil.Utility.Windows;assembly=GoldenAnvil.Utility.Windows"
+	xmlns:controls="clr-namespace:GoldenAnvil.Utility.Windows.Controls;assembly=GoldenAnvil.Utility.Windows"
 	>
 
 	<DataTemplate x:Key="SetHeaderTemplate" DataType="{x:Type local:SetViewModel}">
@@ -50,13 +51,18 @@
 						</ContextMenu>
 					</utility:MenuButton.Menu>
 				</utility:MenuButton>
-				<TextBox
+
+				<controls:CustomTextBox
 					DockPanel.Dock="Right"
 					Width="150"
 					VerticalAlignment="Center"
 					Padding="2"
 					Text="{Binding TableFilter, UpdateSourceTrigger=PropertyChanged}"
-					/>
+					>
+					<controls:CustomTextBox.Hint>
+						<TextBlock Foreground="{DynamicResource FontLightBrush}" Text="{x:Static oraculum:OurResources.Filter}" />
+					</controls:CustomTextBox.Hint>
+				</controls:CustomTextBox>
 			</DockPanel>
 
 			<TreeView

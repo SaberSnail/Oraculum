@@ -120,6 +120,9 @@
   <data name="EditTableButtonLabel" xml:space="preserve">
     <value>Edit</value>
   </data>
+  <data name="Filter" xml:space="preserve">
+    <value>Filter</value>
+  </data>
   <data name="HideSetsButtonLabel" xml:space="preserve">
     <value>Hide Sets</value>
   </data>

@@ -47,7 +47,7 @@
 					Width="{Binding ActualHeight, RelativeSource={RelativeSource Self}}">
 					<utility:MenuButton.Menu>
 						<ContextMenu>
-							<MenuItem Header="{x:Static oraculum:OurResources.ImportTable}" Command="{Binding Converter={x:Static utility:MethodToCommandConverter.Instance}, ConverterParameter=ImportTable}" />
+							<MenuItem Header="{x:Static oraculum:OurResources.ImportTables}" Command="{Binding Converter={x:Static utility:MethodToCommandConverter.Instance}, ConverterParameter=ImportTable}" />
 						</ContextMenu>
 					</utility:MenuButton.Menu>
 				</utility:MenuButton>

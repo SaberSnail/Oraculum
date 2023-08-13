@@ -126,8 +126,8 @@
   <data name="HideSetsButtonLabel" xml:space="preserve">
     <value>Hide Sets</value>
   </data>
-  <data name="ImportTable" xml:space="preserve">
-    <value>Import Table…</value>
+  <data name="ImportTables" xml:space="preserve">
+    <value>Import Tables…</value>
   </data>
   <data name="RollButtonLabel" xml:space="preserve">
     <value>Roll</value>

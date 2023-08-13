@@ -88,11 +88,11 @@ namespace Oraculum {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Import Table….
+        ///   Looks up a localized string similar to Import Tables….
         /// </summary>
-        public static string ImportTable {
+        public static string ImportTables {
             get {
-                return ResourceManager.GetString("ImportTable", resourceCulture);
+                return ResourceManager.GetString("ImportTables", resourceCulture);
             }
         }
         

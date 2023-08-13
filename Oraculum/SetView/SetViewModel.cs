@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
@@ -122,18 +123,29 @@ namespace Oraculum.SetView
 		{
 			await state.ToSyncContext();
 
+			var lastPath = AppModel.Instance.Settings.Get<string>(SettingsKeys.LastImportPath);
+
 			var dialog = new Microsoft.Win32.OpenFileDialog
 			{
-				// Filter = "All Files (*.*)|*.*",
-				Title = OurResources.ImportTable,
+				Title = OurResources.ImportTables,
+				InitialDirectory = lastPath,
+				RestoreDirectory = true,
+				Multiselect = true,
 			};
 			var result = dialog.ShowDialog();
 			if (result == true)
 			{
-				var fileName = dialog.FileName;
-				Log.Info($"Importing table: {fileName}");
-				var (metadata, rows) = await DataManagerUtility.CreateTableDataAsync(state, fileName).ConfigureAwait(false);
-				await AppModel.Instance.Data.AddTableAsync(metadata, rows, state.CancellationToken).ConfigureAwait(false);
+				foreach (var fileName in dialog.FileNames)
+				{
+					Log.Info($"Importing table: {fileName}");
+					lastPath = Path.GetDirectoryName(fileName);
+					var datas = await DataManagerUtility.CreateTableDatasAsync(state, fileName).ConfigureAwait(false);
+					foreach (var (metadata, rows) in datas)
+						await AppModel.Instance.Data.AddTableAsync(metadata, rows, state.CancellationToken).ConfigureAwait(false);
+				}
+
+				await state.ToSyncContext();
+				AppModel.Instance.Settings.Set(SettingsKeys.LastImportPath, lastPath);
 			}
 		}
 

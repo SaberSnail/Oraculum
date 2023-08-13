@@ -13,6 +13,9 @@
   * Add multi-dice import
   * Add imported tables into current set
   * Refresh list of tables after import
+  * With multiple tables per file, create unified table
+  * Support import from an entire folder
+  * Add working indicator for import
 * Export
 * Fix double rolling notification when navigating to table via link
 * Roll on table when clicking an already selected table
@@ -26,3 +29,6 @@
 * Fix selection of table when clicking in output log
 * Add import from file
 * Store preferences in database
+* Support table metadata in import file
+* Add bulk import
+* Support multiple tables per file

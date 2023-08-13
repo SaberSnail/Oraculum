@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GoldenAnvil.Utility.Windows.Async;
+using Oraculum.Data;
 using Oraculum.Engine;
 
 namespace Oraculum.ViewModels
@@ -14,7 +15,7 @@ namespace Oraculum.ViewModels
       m_diceSource = source;
       m_onRollStarted = onRollStarted;
       m_onKeyGenerated = onKeyGenerated;
-      m_useManualDice = AppModel.Instance.Settings.Get<bool?>("UseManualDice") ?? c_useManualDiceDefault;
+      m_useManualDice = AppModel.Instance.Settings.Get<bool?>(SettingsKeys.UseManualDice) ?? c_useManualDiceDefault;
 
       Dice = m_diceSource.Dice.Select(x => new DiceViewModel(x, OnValueDisplayedAsync)).ToArray();
     }

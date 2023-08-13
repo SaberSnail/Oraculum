@@ -14,50 +14,105 @@ namespace Oraculum.Data
 {
 	public static class DataManagerUtility
 	{
-		public static async Task<(TableMetadata Metadata, IReadOnlyList<RowData> Rows)> CreateTableDataAsync(TaskStateController state, string path)
+		public static async Task<IReadOnlyList<(TableMetadata Metadata, IReadOnlyList<RowData> Rows)>> CreateTableDatasAsync(TaskStateController state, string path)
 		{
 			await state.ToThreadPool();
 
-			var title = await CreateBestTitleAsync(Path.GetFileNameWithoutExtension(path), state.CancellationToken).ConfigureAwait(false);
+			var tables = new List<(TableMetadata Metadata, IReadOnlyList<RowData> Rows)>();
+
+			var titlesInUse = await AppModel.Instance.Data.GetAllTableTitlesAsync(state.CancellationToken).ConfigureAwait(false);
+
+			var defaultTitle = CreateBestTitleFromFileName(titlesInUse, Path.GetFileNameWithoutExtension(path));
 			var author = System.Security.Principal.WindowsIdentity.GetCurrent().Name.Split('\\')[1];
 
 			var lines = await File.ReadAllLinesAsync(path, state.CancellationToken).ConfigureAwait(false);
-			var rowInfos = lines.Select(CreateRowInfo).AsReadOnlyList();
-			var rowType = GuessRowType(rowInfos);
 
-			var rows = rowType switch
+			var isAllWhitespaceRegex = new Regex(@"^\s*$");
+			List<(int? Number1, int? Number2, string Output)>? currentRowInfos = null;
+			string currentTitle = defaultTitle;
+			List<string>? currentGroups = null;
+			var parseState = ImportParseState.ReadingMetadata;
+			foreach (var line in lines)
 			{
-				RowKind.NoNumbers => CreateNoNumbersRowDatas(rowInfos),
-				RowKind.MixedRanges => CreateMixedRangesRowDatas(rowInfos),
-				RowKind.Weighted => CreateWeightedRowDatas(rowInfos),
-				_ => throw new InvalidOperationException("Unknown row kind"),
-			};
+				if (line.Length == 0 || isAllWhitespaceRegex.IsMatch(line))
+					continue;
 
-			var metadata = new TableMetadata
+				if (line.StartsWith("# "))
+				{
+					if (parseState == ImportParseState.ReadingRows)
+					{
+						CreateTableMetadata(currentTitle, currentGroups, currentRowInfos!);
+						currentGroups = null;
+						currentRowInfos = null;
+						parseState = ImportParseState.ReadingMetadata;
+					}
+					currentTitle = line[2..].Trim();
+				}
+				else if (line.StartsWith("## "))
+				{
+					if (parseState == ImportParseState.ReadingRows)
+					{
+						CreateTableMetadata(currentTitle, currentGroups, currentRowInfos!);
+						currentTitle = defaultTitle;
+						currentRowInfos = null;
+						parseState = ImportParseState.ReadingMetadata;
+					}
+					currentGroups = line[3..]
+						.Split(" > ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+						.ToList();
+				}
+				else
+				{
+					if (parseState == ImportParseState.ReadingMetadata)
+					{
+						currentRowInfos = new List<(int? Number1, int? Number2, string Output)>();
+						parseState = ImportParseState.ReadingRows;
+					}
+					currentRowInfos!.Add(CreateRowInfo(line));
+				}
+			}
+			if (currentRowInfos is not null)
+				CreateTableMetadata(currentTitle, currentGroups, currentRowInfos);
+
+			void CreateTableMetadata(string title, List<string>? groups, List<(int? Number1, int? Number2, string Output)> rowInfos)
 			{
-				Id = Guid.NewGuid(),
-				Title = title,
-				Author = author,
-				Version = 1,
-				Created = DateTime.Now,
-				Modified = DateTime.Now,
-				RandomSource = rows.RandomSource,
-			};
+				var rowType = GuessRowType(rowInfos);
 
-			return (metadata, rows.Rows);
+				var rows = rowType switch
+				{
+					RowKind.NoNumbers => CreateNoNumbersRowDatas(rowInfos),
+					RowKind.MixedRanges => CreateMixedRangesRowDatas(rowInfos),
+					RowKind.Weighted => CreateWeightedRowDatas(rowInfos),
+					_ => throw new InvalidOperationException("Unknown row kind"),
+				};
+
+				var metadata = new TableMetadata
+				{
+					Id = Guid.NewGuid(),
+					Title = title,
+					Author = author,
+					Version = 1,
+					Created = DateTime.Now,
+					Modified = DateTime.Now,
+					RandomSource = rows.RandomSource,
+					Groups = (IReadOnlyList<string>?) groups ?? Array.Empty<string>(),
+				};
+
+				tables.Add((metadata, rows.Rows));
+			}
+
+			return tables;
 		}
 
-		private static async Task<string> CreateBestTitleAsync(string fileName, CancellationToken cancellationToken)
+		private static string CreateBestTitleFromFileName(HashSet<string> tableTitles, string fileName)
 		{
-			var data = AppModel.Instance.Data;
-			var tableTitles = await data.GetAllTableTitlesAsync(cancellationToken).ConfigureAwait(false);
 			var title = StringUtility.GetWordsFromCamelCase(fileName).Join(" ");
 			return TitleUtility.GetUniqueTitle(title, tableTitles);
 		}
 
 		private static (int? Number1, int? Number2, string Output) CreateRowInfo(string line)
 		{
-			var regex = new Regex(@"^\s*(\d+)?\s*(?>-\s*(\d+))?\s*(.*)$");
+			var regex = new Regex(@"^\s*(\d+)?\s*(?>-\s*(\d+))?\s*\.?\s*(.*)$");
 			var match = regex.Match(line);
 			var number1 = match.Groups[1].Success ? StringUtility.TryParse<int>(match.Groups[1].Value) : null;
 			var number2 = match.Groups[2].Success ? StringUtility.TryParse<int>(match.Groups[2].Value) : null;
@@ -210,6 +265,12 @@ namespace Oraculum.Data
 
 			return new[] { rowCount };
 		}
+
+		private enum ImportParseState
+		{
+			ReadingMetadata,
+			ReadingRows,
+		};
 
 		private enum RowKind
 		{

@@ -24,6 +24,7 @@ namespace Oraculum
 
 			m_currentTheme = new Uri(@"/Themes/Default/Default.xaml", UriKind.Relative);
 			Data = new DataManager();
+			Settings = new SettingsManager();
 		}
 
 		public MainWindowViewModel? MainWindow
@@ -33,6 +34,8 @@ namespace Oraculum
 		}
 
 		public DataManager Data { get; }
+
+		public SettingsManager Settings { get; }
 
 		public TaskGroup TaskGroup => m_taskGroup;
 
@@ -55,6 +58,7 @@ namespace Oraculum
 			await state.ToThreadPool();
 
 			await Data.InitializeAsync(state.CancellationToken).ConfigureAwait(false);
+			await Settings.InitializeAsync(state.CancellationToken).ConfigureAwait(false);
 
 			await state.ToSyncContext();
 
@@ -68,13 +72,14 @@ namespace Oraculum
 		{
 			DisposableUtility.Dispose(ref m_mainWindow);
 			DisposableUtility.Dispose(ref m_taskGroup);
+			await Settings.WaitForWriteAsync(CancellationToken.None).ConfigureAwait(false);
 		}
 
 		public void OpenTable(Guid tableId)
 		{
 			if (m_mainWindow is null)
 				return;
-			TaskWatcher.Create(controller => m_mainWindow.OpenTableAsync(tableId, controller), TaskGroup);
+			TaskWatcher.Execute(controller => m_mainWindow.OpenTableAsync(tableId, controller), TaskGroup);
 		}
 
 		public string GetOrCreateDataFolder()

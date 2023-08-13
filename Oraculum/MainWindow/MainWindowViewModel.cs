@@ -61,7 +61,7 @@ namespace Oraculum.MainWindow
 					if (m_selectedSet is not null)
 					{
 						m_loadSelectedSetWork?.Cancel();
-						m_loadSelectedSetWork = TaskWatcher.Create(m_selectedSet.LoadTablesIfNeededAsync, m_taskGroup);
+						m_loadSelectedSetWork = TaskWatcher.Execute(m_selectedSet.LoadTablesIfNeededAsync, m_taskGroup);
 
 						m_selectedSet.PropertyChanged += OnSelectedSetPropertyChanged;
 						m_selectedSet.TableSelected += OnSelectedTableChanged;

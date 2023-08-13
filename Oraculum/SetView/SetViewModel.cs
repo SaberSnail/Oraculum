@@ -115,7 +115,7 @@ namespace Oraculum.SetView
 		public void ImportTable()
 		{
 			m_importTableWork?.Cancel();
-			m_importTableWork = TaskWatcher.Create(ImportTableAsync, m_taskGroup);
+			m_importTableWork = TaskWatcher.Execute(ImportTableAsync, m_taskGroup);
 		}
 
 		private async Task ImportTableAsync(TaskStateController state)
@@ -298,7 +298,7 @@ namespace Oraculum.SetView
 		{
 			var capturedTable = table;
 			m_loadSelectedTableWork?.Cancel();
-			m_loadSelectedTableWork = TaskWatcher.Create(async state =>
+			m_loadSelectedTableWork = TaskWatcher.Execute(async state =>
 			{
 				await capturedTable.LoadRowsIfNeededAsync(state).ConfigureAwait(false);
 				await state.ToSyncContext();

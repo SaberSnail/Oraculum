@@ -38,7 +38,7 @@ namespace Oraculum.ViewModels
       var key = m_lastKey!;
       m_lastKey = null;
 			m_displayFinalValueWork?.Cancel();
-			m_displayFinalValueWork = TaskWatcher.Create(async state =>
+			m_displayFinalValueWork = TaskWatcher.Execute(async state =>
 			{
 				await m_onValueDisplayed(state, key).ConfigureAwait(false);
 			}, AppModel.Instance.TaskGroup);

@@ -14,6 +14,7 @@ namespace Oraculum.ViewModels
       m_diceSource = source;
       m_onRollStarted = onRollStarted;
       m_onKeyGenerated = onKeyGenerated;
+      m_useManualDice = AppModel.Instance.Settings.Get<bool?>("UseManualDice") ?? c_useManualDiceDefault;
 
       Dice = m_diceSource.Dice.Select(x => new DiceViewModel(x, OnValueDisplayedAsync)).ToArray();
     }
@@ -45,11 +46,14 @@ namespace Oraculum.ViewModels
       }
     }
 
+    private const bool c_useManualDiceDefault = false;
+
     private readonly DiceSource m_diceSource;
     private readonly Action m_onRollStarted;
     private readonly Func<TaskStateController, object, Task> m_onKeyGenerated;
 
     private int m_valueDisplayedCount;
     private object? m_lastKey;
+    private bool m_useManualDice;
   }
 }

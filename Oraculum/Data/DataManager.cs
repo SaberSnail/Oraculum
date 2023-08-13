@@ -28,6 +28,39 @@ namespace Oraculum.Data
 				await CreateDbAsync(connector, cancellationToken).ConfigureAwait(false);
 		}
 
+		public async Task<IReadOnlyList<(string Key, string Value)>> GetAllSettingsAsync(CancellationToken cancellationToken)
+		{
+			using var connector = CreateConnector();
+			var settings = await connector.Command("select Key, Value from Settings")
+				.QueryAsync<(string Key, string Value)>(cancellationToken)
+				.ConfigureAwait(false);
+			return settings;
+		}
+
+		public async Task<string> GetSettingAsync(string key, CancellationToken cancellationToken)
+		{
+			using var connector = CreateConnector();
+			return await connector.Command(Sql.Format($"select Value from Settings where Key = {key}"))
+				.QuerySingleAsync<string>(cancellationToken)
+				.ConfigureAwait(false);
+		}
+
+		public async Task SetSettingAsync(string key, string value, CancellationToken cancellationToken)
+		{
+			using var connector = CreateConnector();
+			await connector.Command(Sql.Format($"insert into Settings (Key, Value) values ({key}, {value}) on conflict do update set Value={value}"))
+				.ExecuteAsync(cancellationToken)
+				.ConfigureAwait(false);
+		}
+
+		public async Task DeleteSettingAsync(string key, CancellationToken cancellationToken)
+		{
+			using var connector = CreateConnector();
+			await connector.Command(Sql.Format($"delete from Settings where Key = {key}"))
+				.ExecuteAsync(cancellationToken)
+				.ConfigureAwait(false);
+		}
+
 		public async Task<IReadOnlyList<SetMetadata>> GetAllSetMetadataAsync(CancellationToken cancellationToken)
 		{
 			using var connector = CreateConnector();
@@ -173,6 +206,9 @@ namespace Oraculum.Data
 					{
 						switch (version)
 						{
+						case 2:
+							await UpdateDatabaseFrom2To3Async(connector, cancellationToken).ConfigureAwait(false);
+							break;
 						case 1:
 							await UpdateDatabaseFrom1To2Async(connector, cancellationToken).ConfigureAwait(false);
 							break;
@@ -190,6 +226,16 @@ namespace Oraculum.Data
 					}
 				}
 			}
+		}
+
+		private static async Task UpdateDatabaseFrom2To3Async(DbConnector connector, CancellationToken cancellationToken)
+		{
+			await connector.Command(@"
+				create table Settings (
+					Key string not null primary key,
+					Value string not null
+				);
+			").ExecuteAsync(cancellationToken).ConfigureAwait(false);
 		}
 
 		private static async Task UpdateDatabaseFrom1To2Async(DbConnector connector, CancellationToken cancellationToken)
@@ -638,13 +684,18 @@ namespace Oraculum.Data
 			SqlSyntax = SqlSyntax.Sqlite,
 		};
 
-		private const int c_dbVersion = 2;
+		private const int c_dbVersion = 3;
 
 		private const string c_createSql = @"
 			create table Info (
 				Version integer not null,
 				Created text not null,
 				Updated text not null
+			);
+
+			create table Settings (
+				Key string not null primary key,
+				Value string not null
 			);
 
 			create table SetMetadata (

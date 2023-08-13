@@ -25,3 +25,4 @@
 * If list item has only one child, expand it
 * Fix selection of table when clicking in output log
 * Add import from file
+* Store preferences in database

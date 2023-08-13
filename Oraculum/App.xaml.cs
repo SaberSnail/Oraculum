@@ -14,7 +14,7 @@ namespace Oraculum
 		{
 		}
 
-		protected override void OnStartup(StartupEventArgs e) => TaskWatcher.Create(c => OnStartupAsync(e, c), AppModel.Instance.TaskGroup);
+		protected override void OnStartup(StartupEventArgs e) => TaskWatcher.Execute(c => OnStartupAsync(e, c), AppModel.Instance.TaskGroup);
 
 		private async Task OnStartupAsync(StartupEventArgs e, TaskStateController state)
 		{

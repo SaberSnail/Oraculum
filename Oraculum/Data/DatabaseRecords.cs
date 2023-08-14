@@ -43,9 +43,10 @@ namespace Oraculum.Data
 
 	public readonly record struct TableMetadata
 	{
-		public TableMetadata(Guid Id, string Author, int Version, DateTime Created, DateTime Modified, string Title, RandomSourceData RandomSource, IReadOnlyList<string>? Groups = null)
+		public TableMetadata(Guid Id, string? Source, string? Author, int Version, DateTime Created, DateTime Modified, string Title, RandomSourceData RandomSource, IReadOnlyList<string>? Groups = null)
 		{
 			this.Id = Id;
+			this.Source = Source;
 			this.Author = Author;
 			this.Version = Version;
 			this.Created = Created;
@@ -56,7 +57,8 @@ namespace Oraculum.Data
 		}
 
 		public Guid Id { get; init; }
-		public string Author { get; init; }
+		public string? Source { get; init; }
+		public string? Author { get; init; }
 		public int Version { get; init; }
 		public DateTime Created { get; init; }
 		public DateTime Modified { get; init; }

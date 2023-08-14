@@ -23,13 +23,14 @@ namespace Oraculum.Data
 			var titlesInUse = await AppModel.Instance.Data.GetAllTableTitlesAsync(state.CancellationToken).ConfigureAwait(false);
 
 			var defaultTitle = CreateBestTitleFromFileName(titlesInUse, Path.GetFileNameWithoutExtension(path));
-			var author = System.Security.Principal.WindowsIdentity.GetCurrent().Name.Split('\\')[1];
 
 			var lines = await File.ReadAllLinesAsync(path, state.CancellationToken).ConfigureAwait(false);
 
 			var isAllWhitespaceRegex = new Regex(@"^\s*$");
 			List<(int? Number1, int? Number2, string Output)>? currentRowInfos = null;
 			string currentTitle = defaultTitle;
+			string? currentSource = null;
+			string? currentAuthor = null;
 			List<string>? currentGroups = null;
 			var parseState = ImportParseState.ReadingMetadata;
 			foreach (var line in lines)
@@ -48,27 +49,33 @@ namespace Oraculum.Data
 					}
 					currentTitle = line[2..].Trim();
 				}
-				else if (line.StartsWith("## "))
-				{
-					if (parseState == ImportParseState.ReadingRows)
-					{
-						CreateTableMetadata(currentTitle, currentGroups, currentRowInfos!);
-						currentTitle = defaultTitle;
-						currentRowInfos = null;
-						parseState = ImportParseState.ReadingMetadata;
-					}
-					currentGroups = line[3..]
-						.Split(" > ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-						.ToList();
-				}
 				else
 				{
 					if (parseState == ImportParseState.ReadingMetadata)
 					{
-						currentRowInfos = new List<(int? Number1, int? Number2, string Output)>();
-						parseState = ImportParseState.ReadingRows;
+						if (line.StartsWith("Groups:", StringComparison.OrdinalIgnoreCase))
+						{
+							currentGroups = line[7..]
+								.Split(" > ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+								.ToList();
+						}
+						else if (line.StartsWith("Source:", StringComparison.OrdinalIgnoreCase))
+						{
+							currentSource = line[7..].Trim();
+						}
+						else if (line.StartsWith("Author:", StringComparison.OrdinalIgnoreCase))
+						{
+							currentAuthor = line[7..].Trim();
+						}
+						else
+						{
+							currentRowInfos = new List<(int? Number1, int? Number2, string Output)>();
+							parseState = ImportParseState.ReadingRows;
+						}
 					}
-					currentRowInfos!.Add(CreateRowInfo(line));
+
+					if (parseState == ImportParseState.ReadingRows)
+						currentRowInfos!.Add(CreateRowInfo(line));
 				}
 			}
 			if (currentRowInfos is not null)
@@ -90,7 +97,8 @@ namespace Oraculum.Data
 				{
 					Id = Guid.NewGuid(),
 					Title = title,
-					Author = author,
+					Source = currentSource,
+					Author = currentAuthor,
 					Version = 1,
 					Created = DateTime.Now,
 					Modified = DateTime.Now,

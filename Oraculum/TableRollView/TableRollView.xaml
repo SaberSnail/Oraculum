@@ -4,10 +4,9 @@
 	xmlns:oraculum="clr-namespace:Oraculum"
 	xmlns:ui="clr-namespace:Oraculum.UI"
 	xmlns:utility="clr-namespace:GoldenAnvil.Utility.Windows;assembly=GoldenAnvil.Utility.Windows"
-  xmlns:viewModels="clr-namespace:Oraculum.ViewModels"
-	>
+  xmlns:viewModels="clr-namespace:Oraculum.ViewModels" xmlns:controls="clr-namespace:GoldenAnvil.Utility.Windows.Controls;assembly=GoldenAnvil.Utility.Windows">
 
-	<DataTemplate x:Key="DiceTemplate" DataType="{x:Type viewModels:DiceViewModel}">
+	<DataTemplate x:Key="DiceRollTemplate" DataType="{x:Type viewModels:DiceViewModel}">
 		<ui:DiceFlipPanel
 			Margin="2"
 			ShouldAnimate="{Binding ShouldAnimate}"
@@ -20,6 +19,16 @@
 			/>
 	</DataTemplate>
 
+	<DataTemplate x:Key="ManualDiceTemplate" DataType="{x:Type viewModels:DiceViewModel}">
+		<controls:CustomTextBox
+			Margin="2"
+			MinWidth="34"
+			Width="34"
+			Text="{Binding ManualValue, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}"
+			HintText="{Binding ManualHintText}"
+			/>
+	</DataTemplate>
+
 	<DataTemplate x:Key="DiceSourceTemplate" DataType="{x:Type viewModels:DiceSourceViewModel}">
 		<DockPanel>
 			<Button
@@ -29,10 +38,11 @@
 				Command="{Binding Converter={x:Static utility:MethodToCommandConverter.Instance}, ConverterParameter=Roll}" />
 
 			<ItemsControl
+				x:Name="DiceList"
 				Margin="8,4"
 				HorizontalAlignment="Left"
 				ItemsSource="{Binding Dice}"
-				ItemTemplate="{DynamicResource DiceTemplate}"
+				ItemTemplate="{StaticResource DiceRollTemplate}"
 				>
 				<ItemsControl.ItemsPanel>
 					<ItemsPanelTemplate>
@@ -41,6 +51,11 @@
 				</ItemsControl.ItemsPanel>
 			</ItemsControl>
 		</DockPanel>
+		<DataTemplate.Triggers>
+			<DataTrigger Binding="{Binding UseManualDice}" Value="True">
+				<Setter TargetName="DiceList" Property="ItemTemplate" Value="{StaticResource ManualDiceTemplate}" />
+			</DataTrigger>
+		</DataTemplate.Triggers>
 	</DataTemplate>
 
 	<DataTemplate x:Key="TableRollTemplate" DataType="{x:Type viewModels:TableViewModel}">

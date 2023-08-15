@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using GoldenAnvil.Utility;
-using System.Windows.Documents;
 using GoldenAnvil.Utility.Windows.Async;
-using Microsoft.VisualStudio.Threading;
+using System.Globalization;
 
 namespace Oraculum.ViewModels
 {
@@ -12,6 +10,7 @@ namespace Oraculum.ViewModels
     public DiceViewModel(int maxValue, Func<TaskStateController, object, Task> onValueDisplayed)
     {
       MaxValue = maxValue;
+      ManualHintText = string.Format(CultureInfo.CurrentCulture, OurResources.SingleDieFormat, maxValue);
       m_onValueDisplayed = onValueDisplayed ?? throw new ArgumentNullException(nameof(onValueDisplayed));
 
       ShouldAnimate = false;
@@ -20,6 +19,24 @@ namespace Oraculum.ViewModels
     }
 
     public int MaxValue { get; }
+
+		public int? ManualValue
+		{
+			get => VerifyAccess(m_manualValue);
+			set
+			{
+				if (SetPropertyField(value, ref m_manualValue) && value is not null)
+        {
+          SetValue()
+        }
+			}
+		}
+
+		public string ManualHintText
+		{
+			get => VerifyAccess(m_manualHintText);
+			set => SetPropertyField(value, ref m_manualHintText);
+		}
 
 		public int Value
     {
@@ -57,5 +74,7 @@ namespace Oraculum.ViewModels
     private int m_value;
     private object? m_lastKey;
     private TaskWatcher? m_displayFinalValueWork;
+    private int? m_manualValue;
+    private string m_manualHintText;
 	}
 }

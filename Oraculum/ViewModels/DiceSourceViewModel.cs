@@ -20,6 +20,16 @@ namespace Oraculum.ViewModels
       Dice = m_diceSource.Dice.Select(x => new DiceViewModel(x, OnValueDisplayedAsync)).ToArray();
     }
 
+    public bool UseManualDice
+		{
+			get => VerifyAccess(m_useManualDice);
+			set
+			{
+				if (SetPropertyField(value, ref m_useManualDice))
+					AppModel.Instance.Settings.Set(SettingsKeys.UseManualDice, value);
+			}
+		}
+
 		private async Task OnValueDisplayedAsync(TaskStateController state, object key)
 		{
 			if (key == m_lastKey)
@@ -56,5 +66,5 @@ namespace Oraculum.ViewModels
     private int m_valueDisplayedCount;
     private object? m_lastKey;
     private bool m_useManualDice;
-  }
+	}
 }

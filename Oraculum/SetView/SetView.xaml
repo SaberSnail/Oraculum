@@ -58,7 +58,7 @@
 					VerticalAlignment="Center"
 					Padding="2"
 					Text="{Binding TableFilter, UpdateSourceTrigger=PropertyChanged}"
-					Hint="{x:Static oraculum:OurResources.Filter}"
+					HintText="{x:Static oraculum:OurResources.Filter}"
 					/>
 			</DockPanel>
 

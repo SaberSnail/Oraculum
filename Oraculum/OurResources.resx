@@ -146,4 +146,7 @@
   <data name="ShowSetsButtonLabel" xml:space="preserve">
     <value>Show Sets</value>
   </data>
+  <data name="SingleDieFormat" xml:space="preserve">
+    <value>d{0}</value>
+  </data>
 </root>

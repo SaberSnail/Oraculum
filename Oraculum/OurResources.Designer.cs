@@ -140,5 +140,14 @@ namespace Oraculum {
                 return ResourceManager.GetString("ShowSetsButtonLabel", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to d{0}.
+        /// </summary>
+        public static string SingleDieFormat {
+            get {
+                return ResourceManager.GetString("SingleDieFormat", resourceCulture);
+            }
+        }
     }
 }

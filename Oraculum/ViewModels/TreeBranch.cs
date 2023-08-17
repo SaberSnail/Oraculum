@@ -14,6 +14,8 @@ namespace Oraculum.ViewModels
 			m_children = new List<TreeNodeBase>();
 			Children = CollectionViewSource.GetDefaultView(m_children);
 			Children.Filter = x => (x as TreeNodeBase)?.MatchesCurrentFilter() ?? false;
+			Children.SortDescriptions.Add(new SortDescription(nameof(IsBranch), ListSortDirection.Descending));
+			Children.SortDescriptions.Add(new SortDescription(nameof(Title), ListSortDirection.Ascending));
 		}
 
 		public override bool IsBranch => true;

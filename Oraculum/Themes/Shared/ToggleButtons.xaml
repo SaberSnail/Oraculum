@@ -4,14 +4,14 @@
 	xmlns:ui="clr-namespace:Oraculum.UI"
 	>
 
-	<Style x:Key="ButtonStyleBase" TargetType="{x:Type Button}">
+	<Style x:Key="ToggleButtonStyleBase" TargetType="{x:Type ToggleButton}">
 		<Setter Property="OverridesDefaultStyle" Value="true" />
 		<Setter Property="ui:TemplateHelper.CornerRadius" Value="{DynamicResource ControlBorderRadius}" />
 		<Setter Property="BorderThickness" Value="{DynamicResource ControlBorderThickness}" />
 
 		<Setter Property="Template">
 			<Setter.Value>
-				<ControlTemplate TargetType="Button">
+				<ControlTemplate TargetType="{x:Type ToggleButton}">
 					<Border
 						x:Name="Border"
 						TextBlock.Foreground="{DynamicResource FontBrush}"
@@ -28,18 +28,11 @@
 									<VisualTransition To="Pressed" GeneratedDuration="0" />
 									<VisualTransition From="Pressed" GeneratedDuration="0" />
 								</VisualStateGroup.Transitions>
-								
+
 								<VisualState x:Name="Normal" />
-								
+
 								<VisualState x:Name="MouseOver">
 									<Storyboard>
-										<ColorAnimationUsingKeyFrames
-											Storyboard.TargetName="Border"
-											Storyboard.TargetProperty="Background.(SolidColorBrush.Color)">
-											<EasingColorKeyFrame
-												KeyTime="0"
-												Value="{DynamicResource ControlBackgroundBaseHoveredColor}" />
-										</ColorAnimationUsingKeyFrames>
 										<ColorAnimationUsingKeyFrames
 											Storyboard.TargetName="Border"
 											Storyboard.TargetProperty="BorderBrush.(SolidColorBrush.Color)">
@@ -49,16 +42,9 @@
 										</ColorAnimationUsingKeyFrames>
 									</Storyboard>
 								</VisualState>
-								
+
 								<VisualState x:Name="Pressed">
 									<Storyboard>
-										<ColorAnimationUsingKeyFrames
-											Storyboard.TargetName="Border"
-											Storyboard.TargetProperty="Background.(SolidColorBrush.Color)">
-											<EasingColorKeyFrame
-												KeyTime="0"
-												Value="{DynamicResource ControlBackgroundBasePressedColor}" />
-										</ColorAnimationUsingKeyFrames>
 										<ColorAnimationUsingKeyFrames
 											Storyboard.TargetName="Border"
 											Storyboard.TargetProperty="BorderBrush.(SolidColorBrush.Color)">
@@ -68,16 +54,9 @@
 										</ColorAnimationUsingKeyFrames>
 									</Storyboard>
 								</VisualState>
-								
+
 								<VisualState x:Name="Disabled">
 									<Storyboard>
-										<ColorAnimationUsingKeyFrames
-											Storyboard.TargetName="Border"
-											Storyboard.TargetProperty="Background.(SolidColorBrush.Color)">
-											<EasingColorKeyFrame
-												KeyTime="0"
-												Value="{DynamicResource ControlBackgroundBaseDisabledColor}" />
-										</ColorAnimationUsingKeyFrames>
 										<ColorAnimationUsingKeyFrames
 											Storyboard.TargetName="Border"
 											Storyboard.TargetProperty="BorderBrush.(SolidColorBrush.Color)">
@@ -95,29 +74,42 @@
 									</Storyboard>
 								</VisualState>
 							</VisualStateGroup>
+
+							<VisualStateGroup x:Name="CheckStates">
+								<VisualState x:Name="Checked">
+									<Storyboard>
+										<ColorAnimationUsingKeyFrames
+											Storyboard.TargetName="Border"
+											Storyboard.TargetProperty="Background.(SolidColorBrush.Color)">
+											<EasingColorKeyFrame
+												KeyTime="0"
+												Value="{DynamicResource ControlBackgroundBasePressedColor}" />
+										</ColorAnimationUsingKeyFrames>
+									</Storyboard>
+								</VisualState>
+								<VisualState x:Name="Unchecked" />
+								<VisualState x:Name="Indeterminate" />
+								<VisualState x:Name="Disabled">
+									<Storyboard>
+										<ColorAnimationUsingKeyFrames
+											Storyboard.TargetName="Border"
+											Storyboard.TargetProperty="Background.(SolidColorBrush.Color)">
+											<EasingColorKeyFrame
+												KeyTime="0"
+												Value="{DynamicResource ControlBackgroundBaseDisabledColor}" />
+										</ColorAnimationUsingKeyFrames>
+									</Storyboard>
+								</VisualState>
+							</VisualStateGroup>
 						</VisualStateManager.VisualStateGroups>
-						
+
 						<ContentPresenter Margin="2" HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True" />
 					</Border>
-					
-					<ControlTemplate.Triggers>
-						<Trigger Property="IsDefault" Value="true">
-							<Setter
-								TargetName="Border"
-								Property="BorderBrush"
-								Value="{DynamicResource ControlBorderHighContrastColor}"/>
-						</Trigger>
-					</ControlTemplate.Triggers>
 				</ControlTemplate>
 			</Setter.Value>
 		</Setter>
 	</Style>
 
-	<Style TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonStyleBase}" />
+	<Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource ToggleButtonStyleBase}" />
 
-	<Style x:Key="HorizontalExpanderButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonStyleBase}">
-		<Setter Property="ui:TemplateHelper.CornerRadius" Value="0" />
-		<Setter Property="BorderThickness" Value="{DynamicResource ControlBorderLeftRightThickness}" />
-	</Style>
-	
 </ResourceDictionary>

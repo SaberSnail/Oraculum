@@ -117,6 +117,84 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CardInputHint" xml:space="preserve">
+    <value>card</value>
+  </data>
+  <data name="CardValueAceDisplay" xml:space="preserve">
+    <value>Ace</value>
+  </data>
+  <data name="CardValueAceShort" xml:space="preserve">
+    <value>A</value>
+  </data>
+  <data name="CardValueBlackJokerDisplay" xml:space="preserve">
+    <value>Black Joker</value>
+  </data>
+  <data name="CardValueBlackJokerShort" xml:space="preserve">
+    <value>BJ</value>
+  </data>
+  <data name="CardValueClubDisplay" xml:space="preserve">
+    <value>{0} of Clubs</value>
+    <comment>{0} is the card display value</comment>
+  </data>
+  <data name="CardValueClubShort" xml:space="preserve">
+    <value>{0}C</value>
+    <comment>{0} is the card short value</comment>
+  </data>
+  <data name="CardValueDiamondDisplay" xml:space="preserve">
+    <value>{0} of Diamonds</value>
+    <comment>{0} is the card display value</comment>
+  </data>
+  <data name="CardValueDiamondShort" xml:space="preserve">
+    <value>{0}D</value>
+    <comment>{0} is the card short value</comment>
+  </data>
+  <data name="CardValueHeartDisplay" xml:space="preserve">
+    <value>{0} of Hearts</value>
+    <comment>{0} is the card display value</comment>
+  </data>
+  <data name="CardValueHeartShort" xml:space="preserve">
+    <value>{0}H</value>
+    <comment>{0} is the card short value</comment>
+  </data>
+  <data name="CardValueJackDisplay" xml:space="preserve">
+    <value>Jack</value>
+  </data>
+  <data name="CardValueJackShort" xml:space="preserve">
+    <value>J</value>
+  </data>
+  <data name="CardValueKingDisplay" xml:space="preserve">
+    <value>King</value>
+  </data>
+  <data name="CardValueKingShort" xml:space="preserve">
+    <value>K</value>
+  </data>
+  <data name="CardValueQueenDisplay" xml:space="preserve">
+    <value>Queen</value>
+  </data>
+  <data name="CardValueQueenShort" xml:space="preserve">
+    <value>Q</value>
+  </data>
+  <data name="CardValueRedJokerDisplay" xml:space="preserve">
+    <value>Red Joker</value>
+  </data>
+  <data name="CardValueRedJokerShort" xml:space="preserve">
+    <value>RJ</value>
+  </data>
+  <data name="CardValueSpadeDisplay" xml:space="preserve">
+    <value>{0} of Spades</value>
+    <comment>{0} is the card display value</comment>
+  </data>
+  <data name="CardValueSpadeShort" xml:space="preserve">
+    <value>{0}S</value>
+    <comment>{0} is the card short value</comment>
+  </data>
+  <data name="DieValueMaximumError" xml:space="preserve">
+    <value>The value must be no more than {0}.</value>
+    <comment>{0} is the number of sides on the die</comment>
+  </data>
+  <data name="DieValueMinimumError" xml:space="preserve">
+    <value>The value must be at least 1.</value>
+  </data>
   <data name="EditTableButtonLabel" xml:space="preserve">
     <value>Edit</value>
   </data>
@@ -146,7 +224,8 @@
   <data name="ShowSetsButtonLabel" xml:space="preserve">
     <value>Show Sets</value>
   </data>
-  <data name="SingleDieFormat" xml:space="preserve">
+  <data name="SingleDieInputHint" xml:space="preserve">
     <value>d{0}</value>
+    <comment>{0} is the number of sides on the die</comment>
   </data>
 </root>

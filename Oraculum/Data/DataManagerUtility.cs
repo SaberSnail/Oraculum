@@ -166,7 +166,7 @@ namespace Oraculum.Data
 			var increment = dice.Count == 1 && dice[0] % rowInfos.Count == 0 ? dice[0] / rowInfos.Count : 1;
 			var randomSource = new RandomSourceData
 			{
-				Kind = RandomSourceKind.Dice,
+				Kind = RandomSourceKind.Die,
 				Dice = dice,
 			};
 
@@ -192,7 +192,7 @@ namespace Oraculum.Data
 		{
 			var randomSource = new RandomSourceData
 			{
-				Kind = RandomSourceKind.Dice,
+				Kind = RandomSourceKind.Die,
 				Dice = new[] { (rowInfos[^1].Number2 ?? rowInfos[^1].Number1)!.Value },
 			};
 
@@ -228,7 +228,7 @@ namespace Oraculum.Data
 			var increment = dice.Count == 1 && dice[0] % rowInfos.Count == 0 ? dice[0] / totalWeight : 1;
 			var randomSource = new RandomSourceData
 			{
-				Kind = RandomSourceKind.Dice,
+				Kind = RandomSourceKind.Die,
 				Dice = dice,
 			};
 

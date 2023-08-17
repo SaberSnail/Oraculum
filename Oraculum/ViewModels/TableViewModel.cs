@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
 using GoldenAnvil.Utility.Windows.Async;
 using Microsoft.VisualStudio.Threading;
 using Oraculum.Data;
 using Oraculum.Engine;
-using Oraculum.ViewModels;
 
 namespace Oraculum.ViewModels
 {
@@ -20,9 +21,13 @@ namespace Oraculum.ViewModels
 			m_created = metadata.Created;
 			m_modified = metadata.Modified;
 			m_groups = metadata.Groups;
+			m_sourceInfo = metadata.RandomSource;
+			m_useManualRoll = AppModel.Instance.Settings.Get<bool>(SettingsKeys.RollValueManually);
 
 			Title = metadata.Title ?? "";
-			RandomSource = new DiceSourceViewModel((DiceSource) RandomSourceBase.Create(metadata.RandomSource), OnRollStarted, OnRandomValueDisplayedAsync);
+
+			m_valueGenerators = new List<ValueGeneratorViewModelBase>();
+			ValueGenerators = CreateValueGenerators();
 		}
 
 		public Guid Id
@@ -73,7 +78,41 @@ namespace Oraculum.ViewModels
 			set => SetPropertyField(value, ref m_isWorking);
 		}
 
-		public DiceSourceViewModel RandomSource { get; }
+		public bool UseManualRoll
+		{
+			get => VerifyAccess(m_useManualRoll);
+			set
+			{
+				if (SetPropertyField(value, ref m_useManualRoll))
+				{
+					AppModel.Instance.Settings.Set(SettingsKeys.RollValueManually, value);
+					var generators = CreateValueGenerators();
+					ValueGenerators = generators;
+				}
+			}
+		}
+
+		public IReadOnlyList<ValueGeneratorViewModelBase> ValueGenerators
+		{
+			get => VerifyAccess(m_valueGenerators);
+			private set
+			{
+				var oldGenerators = m_valueGenerators;
+				if (SetPropertyField(value, ref m_valueGenerators))
+				{
+					foreach (var generator in oldGenerators)
+					{
+						generator.RollStarted -= OnRollStarted;
+						generator.ValueGenerated -= OnValueGenerated;
+					}
+					foreach (var generator in m_valueGenerators)
+					{
+						generator.RollStarted += OnRollStarted;
+						generator.ValueGenerated += OnValueGenerated;
+					}
+				}
+			}
+		}
 
 		public async Task LoadRowsIfNeededAsync(TaskStateController state)
 		{
@@ -95,7 +134,7 @@ namespace Oraculum.ViewModels
 
 				await state.ToSyncContext();
 
-				m_rows = new RowManager(Id, Title, rows);
+				m_resultMappers = m_valueGenerators.Select(x => new ValueToResultMapper(Id, Title, x.Source, rows)).ToList();
 
 				m_isLoaded = true;
 			}
@@ -106,18 +145,53 @@ namespace Oraculum.ViewModels
 			}
 		}
 
-		private void OnRollStarted() => m_rollLog?.RollStarted(m_id, Title);
-
-		private async Task OnRandomValueDisplayedAsync(TaskStateController state, object key)
+		public void Roll()
 		{
-			var result = m_rows?.GetOutput(key);
+			foreach (var generator in m_valueGenerators)
+				generator.Roll();
+		}
 
-			if (result is not null)
+		private void OnRollStarted(object? sender, EventArgs e)
+		{
+			if (m_valueGenerators.Where(x => x.IsRollStarted).Count() == 1)
+				m_rollLog?.RollStarted(m_id, Title);
+		}
+
+		private void OnValueGenerated(object? sender, GenericEventArgs<RandomValueBase> e)
+		{
+			if (m_valueGenerators.All(x => x.GeneratedValue is not null))
 			{
-				Log.Info($"Finished rolling, got {key} : {result.Output}");
-				if (m_rollLog is not null)
-					await m_rollLog.AddAsync(state, result).ConfigureAwait(false);
+				var values = m_valueGenerators.Select(x => x.GeneratedValue!).AsReadOnlyList();
+				var results = new List<RollResult>(m_resultMappers!.Count);
+				for (int i = 0; i < m_resultMappers!.Count; i++)
+				{
+					var result = m_resultMappers[i].GetResult(values[i]);
+					results.Add(result);
+				}
+				TaskWatcher.Execute(async state =>
+				{
+					foreach (var result in results)
+						await m_rollLog!.AddAsync(state, result).ConfigureAwait(false);
+					await state.ToSyncContext();
+					foreach (var generator in m_valueGenerators)
+						generator.OnReportingFinished();
+				}, AppModel.Instance.TaskGroup);
 			}
+		}
+
+		private IReadOnlyList<ValueGeneratorViewModelBase> CreateValueGenerators()
+		{
+			List<ValueGeneratorViewModelBase> generators = new();
+
+			var rollManually = UseManualRoll;
+			foreach (var sourceInfo in EnumerableUtility.Enumerate(m_sourceInfo))
+			{
+				var source = RandomSourceBase.Create(sourceInfo);
+				var generator = ValueGeneratorViewModelBase.Create(source, rollManually);
+				generators.Add(generator);
+			}
+
+			return generators;
 		}
 
 		private static ILogSource Log { get; } = LogManager.CreateLogSource(nameof(TableViewModel));
@@ -128,9 +202,12 @@ namespace Oraculum.ViewModels
 		private DateTime m_created;
 		private DateTime m_modified;
 		private IReadOnlyList<string> m_groups;
+		private RandomSourceData m_sourceInfo;
 		private bool m_isLoaded;
 		private bool m_isWorking;
-		private RowManager? m_rows;
 		private RollLogViewModel? m_rollLog;
+		private IReadOnlyList<ValueGeneratorViewModelBase> m_valueGenerators;
+		private IReadOnlyList<ValueToResultMapper>? m_resultMappers;
+		private bool m_useManualRoll;
 	}
 }

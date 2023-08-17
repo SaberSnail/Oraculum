@@ -61,6 +61,213 @@ namespace Oraculum {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to card.
+        /// </summary>
+        public static string CardInputHint {
+            get {
+                return ResourceManager.GetString("CardInputHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ace.
+        /// </summary>
+        public static string CardValueAceDisplay {
+            get {
+                return ResourceManager.GetString("CardValueAceDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A.
+        /// </summary>
+        public static string CardValueAceShort {
+            get {
+                return ResourceManager.GetString("CardValueAceShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Black Joker.
+        /// </summary>
+        public static string CardValueBlackJokerDisplay {
+            get {
+                return ResourceManager.GetString("CardValueBlackJokerDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to BJ.
+        /// </summary>
+        public static string CardValueBlackJokerShort {
+            get {
+                return ResourceManager.GetString("CardValueBlackJokerShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} of Clubs.
+        /// </summary>
+        public static string CardValueClubDisplay {
+            get {
+                return ResourceManager.GetString("CardValueClubDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}C.
+        /// </summary>
+        public static string CardValueClubShort {
+            get {
+                return ResourceManager.GetString("CardValueClubShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} of Diamonds.
+        /// </summary>
+        public static string CardValueDiamondDisplay {
+            get {
+                return ResourceManager.GetString("CardValueDiamondDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}D.
+        /// </summary>
+        public static string CardValueDiamondShort {
+            get {
+                return ResourceManager.GetString("CardValueDiamondShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} of Hearts.
+        /// </summary>
+        public static string CardValueHeartDisplay {
+            get {
+                return ResourceManager.GetString("CardValueHeartDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}H.
+        /// </summary>
+        public static string CardValueHeartShort {
+            get {
+                return ResourceManager.GetString("CardValueHeartShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Jack.
+        /// </summary>
+        public static string CardValueJackDisplay {
+            get {
+                return ResourceManager.GetString("CardValueJackDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to J.
+        /// </summary>
+        public static string CardValueJackShort {
+            get {
+                return ResourceManager.GetString("CardValueJackShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to King.
+        /// </summary>
+        public static string CardValueKingDisplay {
+            get {
+                return ResourceManager.GetString("CardValueKingDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to K.
+        /// </summary>
+        public static string CardValueKingShort {
+            get {
+                return ResourceManager.GetString("CardValueKingShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Queen.
+        /// </summary>
+        public static string CardValueQueenDisplay {
+            get {
+                return ResourceManager.GetString("CardValueQueenDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Q.
+        /// </summary>
+        public static string CardValueQueenShort {
+            get {
+                return ResourceManager.GetString("CardValueQueenShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Red Joker.
+        /// </summary>
+        public static string CardValueRedJokerDisplay {
+            get {
+                return ResourceManager.GetString("CardValueRedJokerDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RJ.
+        /// </summary>
+        public static string CardValueRedJokerShort {
+            get {
+                return ResourceManager.GetString("CardValueRedJokerShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} of Spades.
+        /// </summary>
+        public static string CardValueSpadeDisplay {
+            get {
+                return ResourceManager.GetString("CardValueSpadeDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}S.
+        /// </summary>
+        public static string CardValueSpadeShort {
+            get {
+                return ResourceManager.GetString("CardValueSpadeShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The value must be no more than {0}..
+        /// </summary>
+        public static string DieValueMaximumError {
+            get {
+                return ResourceManager.GetString("DieValueMaximumError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The value must be at least 1..
+        /// </summary>
+        public static string DieValueMinimumError {
+            get {
+                return ResourceManager.GetString("DieValueMinimumError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Edit.
         /// </summary>
         public static string EditTableButtonLabel {
@@ -144,9 +351,9 @@ namespace Oraculum {
         /// <summary>
         ///   Looks up a localized string similar to d{0}.
         /// </summary>
-        public static string SingleDieFormat {
+        public static string SingleDieInputHint {
             get {
-                return ResourceManager.GetString("SingleDieFormat", resourceCulture);
+                return ResourceManager.GetString("SingleDieInputHint", resourceCulture);
             }
         }
     }

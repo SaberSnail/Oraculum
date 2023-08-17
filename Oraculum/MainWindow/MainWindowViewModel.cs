@@ -138,7 +138,7 @@ namespace Oraculum.MainWindow
 		private void OnSelectedTableChanged(object? sender, GenericEventArgs<TableViewModel> e)
 		{
 			if (!IsEditTablePanelVisible)
-				e.Value.RandomSource.Roll();
+				e.Value.Roll();
 		}
 
 		private static ILogSource Log { get; } = LogManager.CreateLogSource(nameof(MainWindowViewModel));

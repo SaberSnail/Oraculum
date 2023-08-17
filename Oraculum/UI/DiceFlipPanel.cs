@@ -41,6 +41,14 @@ namespace Oraculum.UI
 			m_activeFace = 0;
 		}
 
+		public static readonly DependencyProperty StartRollProperty = DependencyPropertyUtility<DiceFlipPanel>.Register(x => x.StartRoll, new PropertyChangedCallback(OnStartRollChanged), false);
+
+		public bool StartRoll
+		{
+			get => (bool) GetValue(StartRollProperty);
+			set => SetValue(StartRollProperty, value);
+		}
+
 		public static readonly DependencyProperty ShouldAnimateProperty = DependencyPropertyUtility<DiceFlipPanel>.Register(x => x.ShouldAnimate);
 
 		public bool ShouldAnimate
@@ -49,7 +57,7 @@ namespace Oraculum.UI
 			set => SetValue(ShouldAnimateProperty, value);
 		}
 
-		public static readonly DependencyProperty TargetValueProperty = DependencyPropertyUtility<DiceFlipPanel>.Register(x => x.TargetValue, new PropertyChangedCallback(OnTargetValueChanged), 0);
+		public static readonly DependencyProperty TargetValueProperty = DependencyPropertyUtility<DiceFlipPanel>.Register(x => x.TargetValue, new PropertyChangedCallback(OnTargetChanged), 0);
 
 		public int? TargetValue
 		{
@@ -65,7 +73,7 @@ namespace Oraculum.UI
 			set => SetValue(MinimumValueProperty, value);
 		}
 
-		public static readonly DependencyProperty MaximumValueProperty = DependencyPropertyUtility<DiceFlipPanel>.Register(x => x.MaximumValue);
+		public static readonly DependencyProperty MaximumValueProperty = DependencyPropertyUtility<DiceFlipPanel>.Register(x => x.MaximumValue, new PropertyChangedCallback(OnTargetChanged), 0);
 
 		public int? MaximumValue
 		{
@@ -97,12 +105,22 @@ namespace Oraculum.UI
 
 		private void ResetActive() => m_activeFace = 0;
 
-		private static void OnTargetValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		private static void OnTargetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
-			_ = Dispatcher.CurrentDispatcher.BeginInvoke(() => OnTargetValueChangedImpl((DiceFlipPanel) d), DispatcherPriority.Loaded);
+			var panel = (DiceFlipPanel) d;
+			var targetValue = panel.TargetValue ?? panel.MaximumValue;
+			panel.m_faces[0].SetValue(targetValue ?? 0);
+			panel.m_faces[^1].SetValue(targetValue ?? 0);
 		}
 
-		private static void OnTargetValueChangedImpl(DiceFlipPanel panel)
+		private static void OnStartRollChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			var panel = (DiceFlipPanel) d;
+			if (panel.StartRoll)
+				_ = Dispatcher.CurrentDispatcher.BeginInvoke(() => OnStartRollChangedImpl(panel), DispatcherPriority.Loaded);
+		}
+
+		private static void OnStartRollChangedImpl(DiceFlipPanel panel)
 		{
 			if (panel.m_lastStoryboard is not null)
 			{

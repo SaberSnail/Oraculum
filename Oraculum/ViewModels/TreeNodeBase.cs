@@ -4,6 +4,8 @@ namespace Oraculum.ViewModels
 {
 	public abstract class TreeNodeBase : ViewModelBase
 	{
+		public abstract bool IsBranch { get; }
+
 		public TreeBranch? Parent
 		{
 			get => VerifyAccess(m_parent);

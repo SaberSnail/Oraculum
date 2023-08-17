@@ -3,6 +3,6 @@
 	public static class SettingsKeys
 	{
 		public const string LastImportPath = "LastImportPath";
-		public const string UseManualDice = "UseManualDice";
+		public const string RollValueManually = "RollValueManually";
 	}
 }

@@ -16,6 +16,8 @@ namespace Oraculum.ViewModels
 			Children.Filter = x => (x as TreeNodeBase)?.MatchesCurrentFilter() ?? false;
 		}
 
+		public override bool IsBranch => true;
+
 		public ICollectionView Children { get; }
 
 		public bool IsExpanded

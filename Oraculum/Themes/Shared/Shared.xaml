@@ -8,6 +8,7 @@
 		<ResourceDictionary Source="OutputLog.xaml" />
 
 		<ResourceDictionary Source="Buttons.xaml" />
+		<ResourceDictionary Source="ToggleButtons.xaml" />
 		<ResourceDictionary Source="Splitters.xaml" />
 		<ResourceDictionary Source="Windows.xaml" />
 		<ResourceDictionary Source="TextBox.xaml" />

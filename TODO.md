@@ -14,7 +14,6 @@
   * Add working indicator for import
 * Export
 * Roll on table when clicking an already selected table
-* Sort groups before tables in table list
 * Create an icon
 
 # DONE
@@ -37,3 +36,4 @@
 * Support for manual rolling
   * Delay for 1 second or until user presses enter
   * Focus first entry box whenever roll starts
+* Sort groups before tables in table list

@@ -25,7 +25,14 @@ namespace Oraculum.ViewModels
 		public bool IsExpanded
 		{
 			get => VerifyAccess(m_isExpanded);
-			set => SetPropertyField(value, ref m_isExpanded);
+			set
+			{
+				if (SetPropertyField(value, ref m_isExpanded) && value)
+				{
+					if (m_children.Count == 1 && m_children[0] is TreeBranch childBranch)
+						childBranch.IsExpanded = true;
+				}
+			}
 		}
 
 		public IEnumerable<TreeNodeBase> GetUnfilteredChildren() => m_children;

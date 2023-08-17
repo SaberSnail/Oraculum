@@ -236,15 +236,9 @@ namespace Oraculum.SetView
 			item.PropertyChanged += OnTablePropertyChanged;
 			item.PropertyChanging += OnTablePropertyChanging;
 			if (parent is null)
-			{
 				m_tables.Add(item);
-			}
 			else
-			{
 				parent.AddChild(item);
-				if (item is TreeBranch)
-					parent.IsExpanded = true;
-			}
 		}
 
 		private void OnTablePropertyChanging(object ?sender, PropertyChangingEventArgs e)

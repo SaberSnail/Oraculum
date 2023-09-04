@@ -21,13 +21,14 @@ namespace Oraculum.ViewModels
 			m_created = metadata.Created;
 			m_modified = metadata.Modified;
 			m_groups = metadata.Groups;
-			m_sourceInfo = metadata.RandomSource;
+			m_randomPlan = metadata.RandomPlan;
 			m_useManualRoll = AppModel.Instance.Settings.Get<bool>(SettingsKeys.RollValueManually);
+			m_extraTables = new Dictionary<Guid, (TableMetadata Metadata, ValueToResultMapper ResultMapper)>();
 
 			Title = metadata.Title ?? "";
 
 			m_valueGenerators = new List<ValueGeneratorViewModelBase>();
-			ValueGenerators = CreateValueGenerators();
+			ValueGenerators = CreateValueGenerators(m_randomPlan, m_useManualRoll);
 		}
 
 		public Guid Id
@@ -86,7 +87,7 @@ namespace Oraculum.ViewModels
 				if (SetPropertyField(value, ref m_useManualRoll))
 				{
 					AppModel.Instance.Settings.Set(SettingsKeys.RollValueManually, value);
-					var generators = CreateValueGenerators();
+					var generators = CreateValueGenerators(m_randomPlan, m_useManualRoll);
 					ValueGenerators = generators;
 				}
 			}
@@ -125,16 +126,38 @@ namespace Oraculum.ViewModels
 			await state.ToSyncContext();
 			IsWorking = true;
 			var tableId = Id;
+			var data = AppModel.Instance.Data;
 
 			try
 			{
 				await state.ToThreadPool();
 
-				var rows = await AppModel.Instance.Data.GetRowsAsync(tableId, state.CancellationToken).ConfigureAwait(false);
-
+				var rows = await data.GetRowsAsync(tableId, state.CancellationToken).ConfigureAwait(false);
+				var extraTableIds = rows
+					.Select(x => x.Next)
+					.WhereNotNull()
+					.Select(x => x!.Value)
+					.Distinct()
+					.AsReadOnlyList();
+				var extraTables = new List<(TableMetadata Metadata, IReadOnlyList<RowData> Rows)>();
+				if (extraTableIds.Count != 0)
+				{
+					var extraTableMetadatas = await data.GetTableMetadatasAsync(extraTableIds, state.CancellationToken).ConfigureAwait(false);
+					foreach (var extraTableMetadata in extraTableMetadatas)
+					{
+						var extraRows = await data.GetRowsAsync(extraTableMetadata.Id, state.CancellationToken).ConfigureAwait(false);
+						if (extraRows is not null)
+							extraTables.Add((extraTableMetadata, extraRows));
+					}
+				}
 				await state.ToSyncContext();
 
-				m_resultMappers = m_valueGenerators.Select(x => new ValueToResultMapper(Id, Title, x.Source, rows)).ToList();
+				m_resultMappers = m_valueGenerators.Select(x => new ValueToResultMapper(Id, Title, rows)).ToList();
+				foreach (var (extraMetadata, extraRows) in extraTables)
+				{
+					var mapper = new ValueToResultMapper(extraMetadata.Id, extraMetadata.Title, extraRows);
+					m_extraTables.Add(extraMetadata.Id, (extraMetadata, mapper));
+				}
 
 				m_isLoaded = true;
 			}
@@ -179,12 +202,11 @@ namespace Oraculum.ViewModels
 			}
 		}
 
-		private IReadOnlyList<ValueGeneratorViewModelBase> CreateValueGenerators()
+		private static IReadOnlyList<ValueGeneratorViewModelBase> CreateValueGenerators(IReadOnlyList<RandomSourceData> randomPlan, bool rollManually)
 		{
 			List<ValueGeneratorViewModelBase> generators = new();
 
-			var rollManually = UseManualRoll;
-			foreach (var sourceInfo in EnumerableUtility.Enumerate(m_sourceInfo))
+			foreach (var sourceInfo in randomPlan)
 			{
 				var source = RandomSourceBase.Create(sourceInfo);
 				var generator = ValueGeneratorViewModelBase.Create(source, rollManually);
@@ -196,13 +218,15 @@ namespace Oraculum.ViewModels
 
 		private static ILogSource Log { get; } = LogManager.CreateLogSource(nameof(TableViewModel));
 
+		private readonly Dictionary<Guid, (TableMetadata Metadata, ValueToResultMapper ResultMapper)> m_extraTables;
+
 		private Guid m_id;
 		private string m_author;
 		private int m_version;
 		private DateTime m_created;
 		private DateTime m_modified;
 		private IReadOnlyList<string> m_groups;
-		private RandomSourceData m_sourceInfo;
+		private IReadOnlyList<RandomSourceData> m_randomPlan;
 		private bool m_isLoaded;
 		private bool m_isWorking;
 		private RollLogViewModel? m_rollLog;

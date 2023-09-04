@@ -83,7 +83,7 @@ namespace Oraculum.Tests
 				Modified = tableDateTime,
 				Groups = new[] { "Ironsworn", "Oracle" },
 				Title = "50/50",
-				RandomSource = new RandomSourceData { Dice = new[] { 100 } },
+				RandomPlan = new[] { new RandomSourceData { Dice = new[] { 100 } } },
 			};
 		}
 

@@ -12,9 +12,9 @@ using Oraculum.Engine;
 
 namespace Oraculum.Data
 {
-	public static class DataManagerUtility
+	public static class DataImportUtility
 	{
-		public static async Task<IReadOnlyList<(TableMetadata Metadata, IReadOnlyList<RowData> Rows)>> CreateTableDatasAsync(TaskStateController state, string path)
+		public static async Task<IReadOnlyList<(TableMetadata Metadata, IReadOnlyList<RowData> Rows)>> ImportTablesAsync(TaskStateController state, string path)
 		{
 			await state.ToThreadPool();
 
@@ -26,12 +26,15 @@ namespace Oraculum.Data
 
 			var lines = await File.ReadAllLinesAsync(path, state.CancellationToken).ConfigureAwait(false);
 
-			var isAllWhitespaceRegex = new Regex(@"^\s*$");
-			List<(int? Number1, int? Number2, string Output)>? currentRowInfos = null;
+			List<(int? Number1, int? Number2, string Output, Guid? Next)>? currentRowInfos = null;
 			string currentTitle = defaultTitle;
 			string? currentSource = null;
 			string? currentAuthor = null;
-			List<string>? currentGroups = null;
+			Guid? currentId = null;
+			IReadOnlyList<string> currentGroups = Array.Empty<string>();
+			IReadOnlyList<RandomSourceData> currentRandomPlan = Array.Empty<RandomSourceData>();
+
+			var isAllWhitespaceRegex = new Regex(@"^\s*$");
 			var parseState = ImportParseState.ReadingMetadata;
 			foreach (var line in lines)
 			{
@@ -42,8 +45,12 @@ namespace Oraculum.Data
 				{
 					if (parseState == ImportParseState.ReadingRows)
 					{
-						CreateTableMetadata(currentTitle, currentGroups, currentRowInfos!);
-						currentGroups = null;
+						CreateTableMetadata(currentId, currentTitle, currentAuthor, currentSource, currentRandomPlan, currentGroups, currentRowInfos!);
+						currentGroups = Array.Empty<string>();
+						currentRandomPlan = Array.Empty<RandomSourceData>();
+						currentSource = null;
+						currentAuthor = null;
+						currentId = null;
 						currentRowInfos = null;
 						parseState = ImportParseState.ReadingMetadata;
 					}
@@ -67,9 +74,17 @@ namespace Oraculum.Data
 						{
 							currentAuthor = line[7..].Trim();
 						}
+						else if (line.StartsWith("ID:", StringComparison.OrdinalIgnoreCase))
+						{
+							currentId = Guid.Parse(line[3..].Trim());
+						}
+						else if (line.StartsWith("Random:", StringComparison.OrdinalIgnoreCase))
+						{
+							currentRandomPlan = ParseRandomPlan(line[7..].Trim());
+						}
 						else
 						{
-							currentRowInfos = new List<(int? Number1, int? Number2, string Output)>();
+							currentRowInfos = new List<(int? Number1, int? Number2, string Output, Guid? Next)>();
 							parseState = ImportParseState.ReadingRows;
 						}
 					}
@@ -79,13 +94,13 @@ namespace Oraculum.Data
 				}
 			}
 			if (currentRowInfos is not null)
-				CreateTableMetadata(currentTitle, currentGroups, currentRowInfos);
+				CreateTableMetadata(currentId, currentTitle, currentAuthor, currentSource, currentRandomPlan, currentGroups, currentRowInfos);
 
-			void CreateTableMetadata(string title, List<string>? groups, List<(int? Number1, int? Number2, string Output)> rowInfos)
+			void CreateTableMetadata(Guid? id, string title, string? author, string? source, IReadOnlyList<RandomSourceData> randomPlan, IReadOnlyList<string> groups, List<(int? Number1, int? Number2, string Output, Guid? Next)> rowInfos)
 			{
 				var rowType = GuessRowType(rowInfos);
 
-				var rows = rowType switch
+				var (randomSource, rows) = rowType switch
 				{
 					RowKind.NoNumbers => CreateNoNumbersRowDatas(rowInfos),
 					RowKind.MixedRanges => CreateMixedRangesRowDatas(rowInfos),
@@ -93,20 +108,25 @@ namespace Oraculum.Data
 					_ => throw new InvalidOperationException("Unknown row kind"),
 				};
 
+				if (randomPlan.Count == 0)
+					randomPlan = new[] { randomSource };
+				else if (randomPlan[0] != randomSource)
+					throw new FormatException("Calculated random source does not match the expected random plan.");
+
 				var metadata = new TableMetadata
 				{
-					Id = Guid.NewGuid(),
+					Id = id ?? Guid.NewGuid(),
 					Title = title,
-					Source = currentSource,
-					Author = currentAuthor,
+					Source = source,
+					Author = author,
 					Version = 1,
 					Created = DateTime.Now,
 					Modified = DateTime.Now,
-					RandomSource = rows.RandomSource,
-					Groups = (IReadOnlyList<string>?) groups ?? Array.Empty<string>(),
+					RandomPlan = randomPlan,
+					Groups = groups,
 				};
 
-				tables.Add((metadata, rows.Rows));
+				tables.Add((metadata, rows));
 			}
 
 			return tables;
@@ -118,9 +138,26 @@ namespace Oraculum.Data
 			return TitleUtility.GetUniqueTitle(title, tableTitles);
 		}
 
-		private static (int? Number1, int? Number2, string Output) CreateRowInfo(string line)
+		private static IReadOnlyList<RandomSourceData> ParseRandomPlan(string input)
 		{
-			var regex = new Regex(@"^\s*(\d+)?\s*(?>-\s*(\d+))?\s*\.?\s*(.*)$");
+			var parts = input.Split(";", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+			var regex = new Regex(@"(\d+)d(\d+)");
+			return parts
+				.Select(text =>
+				{
+					var match = regex.Match(text);
+					if (!match.Success)
+						throw new FormatException("Random plan input does not have the expected format.");
+					var count = int.Parse(match.Groups[1].Value);
+					var sides = int.Parse(match.Groups[2].Value);
+					return new RandomSourceData(RandomSourceKind.Die, Enumerable.Range(1, count).Select(x => sides).AsReadOnlyList());
+				})
+				.AsReadOnlyList();
+		}
+
+		private static (int? Number1, int? Number2, string Output, Guid? next) CreateRowInfo(string line)
+		{
+			var regex = new Regex(@"^(?>\s*(\d+)\s+)?(?>(\d+)\s+)?\.?\s*(.*)$");
 			var match = regex.Match(line);
 			var number1 = match.Groups[1].Success ? StringUtility.TryParse<int>(match.Groups[1].Value) : null;
 			var number2 = match.Groups[2].Success ? StringUtility.TryParse<int>(match.Groups[2].Value) : null;
@@ -128,10 +165,20 @@ namespace Oraculum.Data
 				number1 = 100;
 			if (number2 == 0)
 				number2 = 100;
-			return (number1, number2, match.Groups[3].Value);
+			var output = match.Groups[3].Value;
+			var nextRegex = new Regex(@"(\s*\[(.*)\])?$");
+			var nextMatch = nextRegex.Match(output);
+			Guid? nextId = null;
+			if (nextMatch.Success && Guid.TryParse(nextMatch.Groups[2].Value, out var next))
+			{
+				nextId = next;
+				output = output.Substring(0, nextMatch.Groups[1].Index);
+			}
+
+			return (number1, number2, output, nextId);
 		}
 
-		private static RowKind GuessRowType(IReadOnlyList<(int? Number1, int? Number2, string Output)> rowInfos)
+		private static RowKind GuessRowType(IReadOnlyList<(int? Number1, int? Number2, string Output, Guid? Next)> rowInfos)
 		{
 			if (rowInfos.All(x => x.Number1 is null && x.Number2 is null))
 				return RowKind.NoNumbers;
@@ -157,7 +204,7 @@ namespace Oraculum.Data
 			return RowKind.Unknown;
 		}
 
-		private static (RandomSourceData RandomSource, IReadOnlyList<RowData> Rows) CreateNoNumbersRowDatas(IReadOnlyList<(int? Number1, int? Number2, string Output)> rowInfos)
+		private static (RandomSourceData RandomSource, IReadOnlyList<RowData> Rows) CreateNoNumbersRowDatas(IReadOnlyList<(int? Number1, int? Number2, string Output, Guid? Next)> rowInfos)
 		{
 			var dice = GetBestDice(rowInfos.Count);
 			if (dice.Count != 1)
@@ -179,6 +226,7 @@ namespace Oraculum.Data
 						Min = startValue,
 						Max = startValue + increment - 1,
 						Output = info.Output,
+						Next = info.Next,
 					};
 					startValue += increment;
 					return data;
@@ -188,7 +236,7 @@ namespace Oraculum.Data
 			return (randomSource, rows);
 		}
 
-		private static (RandomSourceData RandomSource, IReadOnlyList<RowData> Rows) CreateMixedRangesRowDatas(IReadOnlyList<(int? Number1, int? Number2, string Output)> rowInfos)
+		private static (RandomSourceData RandomSource, IReadOnlyList<RowData> Rows) CreateMixedRangesRowDatas(IReadOnlyList<(int? Number1, int? Number2, string Output, Guid? Next)> rowInfos)
 		{
 			var randomSource = new RandomSourceData
 			{
@@ -209,6 +257,7 @@ namespace Oraculum.Data
 						Min = info.Number1!.Value,
 						Max = lastMax,
 						Output = info.Output,
+						Next = info.Next,
 					};
 					return data;
 				})
@@ -217,7 +266,7 @@ namespace Oraculum.Data
 			return (randomSource, rows);
 		}
 
-		private static (RandomSourceData RandomSource, IReadOnlyList<RowData> Rows) CreateWeightedRowDatas(IReadOnlyList<(int? Number1, int? Number2, string Output)> rowInfos)
+		private static (RandomSourceData RandomSource, IReadOnlyList<RowData> Rows) CreateWeightedRowDatas(IReadOnlyList<(int? Number1, int? Number2, string Output, Guid? Next)> rowInfos)
 		{
 			var totalWeight = rowInfos.Sum(x => x.Number1!.Value);
 
@@ -241,6 +290,7 @@ namespace Oraculum.Data
 						Min = startValue,
 						Max = startValue + (info.Number1!.Value * increment) - 1,
 						Output = info.Output,
+						Next = info.Next,
 					};
 					startValue += (info.Number1!.Value * increment);
 					return data;

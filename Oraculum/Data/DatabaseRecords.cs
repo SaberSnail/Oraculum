@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using GoldenAnvil.Utility;
 using Oraculum.Engine;
 
 namespace Oraculum.Data
@@ -43,7 +45,7 @@ namespace Oraculum.Data
 
 	public readonly record struct TableMetadata
 	{
-		public TableMetadata(Guid Id, string? Source, string? Author, int Version, DateTime Created, DateTime Modified, string Title, RandomSourceData RandomSource, IReadOnlyList<string>? Groups = null)
+		public TableMetadata(Guid Id, string? Source, string? Author, int Version, DateTime Created, DateTime Modified, string Title, IReadOnlyList<RandomSourceData> RandomPlan, IReadOnlyList<string>? Groups = null)
 		{
 			this.Id = Id;
 			this.Source = Source;
@@ -52,7 +54,7 @@ namespace Oraculum.Data
 			this.Created = Created;
 			this.Modified = Modified;
 			this.Title = Title;
-			this.RandomSource = RandomSource;
+			this.RandomPlan = RandomPlan;
 			this.Groups = Groups ?? Array.Empty<string>();
 		}
 
@@ -63,11 +65,11 @@ namespace Oraculum.Data
 		public DateTime Created { get; init; }
 		public DateTime Modified { get; init; }
 		public string Title { get; init; }
-		public RandomSourceData RandomSource { get; init; }
+		public IReadOnlyList<RandomSourceData> RandomPlan { get; init; } = Array.Empty<RandomSourceData>();
 		public IReadOnlyList<string> Groups { get; init; } = Array.Empty<string>();
 	}
 
-	public readonly record struct RandomSourceData
+	public struct RandomSourceData : IEquatable<RandomSourceData>
 	{
 		public RandomSourceData(RandomSourceKind Kind, IReadOnlyList<int>? Dice = null)
 		{
@@ -77,6 +79,21 @@ namespace Oraculum.Data
 
 		public RandomSourceKind Kind { get; init; }
 		public IReadOnlyList<int> Dice { get; init; } = Array.Empty<int>();
+
+		public override bool Equals(object? that) =>
+			that is RandomSourceData data && Equals(data);
+
+		public bool Equals(RandomSourceData that) =>
+			(Kind == that.Kind) && Dice.SequenceEqual(that.Dice ?? Array.Empty<int>());
+
+		public override int GetHashCode() =>
+			HashCodeUtility.CombineHashCodes(Kind.GetHashCode(), Dice.GetHashCode());
+
+		public static bool operator ==(RandomSourceData left, RandomSourceData right) =>
+			left.Equals(right);
+
+		public static bool operator !=(RandomSourceData left, RandomSourceData right) =>
+			!left.Equals(right);
 	}
 
 	public readonly record struct RowData(int Min, int Max, string Output, Guid? Next);

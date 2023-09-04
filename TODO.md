@@ -10,7 +10,7 @@
   * Add imported tables into current set
   * Refresh list of tables after import
   * With multiple tables per file, create unified table
-  * Support import from an entire folder
+  * Support import from an entire folder (bulk import)
   * Add working indicator for import
 * Export
 * Roll on table when clicking an already selected table
@@ -26,7 +26,7 @@
 * Add import from file
 * Store preferences in database
 * Support table metadata in import file
-* Add bulk import
+* Add multi-file import
 * Support multiple tables per file
 * Fix double rolling notification when navigating to table via link
 * Set up key class
@@ -37,3 +37,6 @@
   * Delay for 1 second or until user presses enter
   * Focus first entry box whenever roll starts
 * Sort groups before tables in table list
+* Support "Next" table on import
+* Support table ID field on import
+* 

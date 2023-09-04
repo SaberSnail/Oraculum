@@ -139,7 +139,7 @@ namespace Oraculum.SetView
 				{
 					Log.Info($"Importing table: {fileName}");
 					lastPath = Path.GetDirectoryName(fileName);
-					var datas = await DataManagerUtility.CreateTableDatasAsync(state, fileName).ConfigureAwait(false);
+					var datas = await DataImportUtility.ImportTablesAsync(state, fileName).ConfigureAwait(false);
 					foreach (var (metadata, rows) in datas)
 						await AppModel.Instance.Data.AddTableAsync(metadata, rows, state.CancellationToken).ConfigureAwait(false);
 				}

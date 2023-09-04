@@ -9,7 +9,7 @@ namespace Oraculum.Engine;
 
 public sealed class ValueToResultMapper
 {
-	public ValueToResultMapper(Guid tableId, string? tableTitle, RandomSourceBase source, IReadOnlyList<RowData> rows)
+	public ValueToResultMapper(Guid tableId, string? tableTitle, IReadOnlyList<RowData> rows)
 	{
 		m_tableId = tableId;
 		m_tableTitle = tableTitle;

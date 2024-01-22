@@ -1,14 +1,17 @@
-﻿using Oraculum.Engine;
+﻿using System;
+using Oraculum.Engine;
 
 namespace Oraculum.ViewModels;
 
 public sealed class AutoCardValueGeneratorViewModel : ValueGeneratorViewModelBase
 {
-	public AutoCardValueGeneratorViewModel(CardSource source)
-		: base(source)
+	public AutoCardValueGeneratorViewModel(int config, Action onRollStarted, Action onValueGenerated)
+		: base(config, onRollStarted, onValueGenerated)
 	{
-		Source = source;
 	}
 
-	public new CardSource Source { get; }
+	protected override void RollCore()
+	{
+		GeneratedValue = DieUtility.GetSingleRandomValue(Configuration);
+	}
 }

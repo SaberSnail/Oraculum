@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
@@ -9,6 +8,7 @@ using GoldenAnvil.Utility.Windows.Async;
 using Microsoft.VisualStudio.Threading;
 using Oraculum.Data;
 using Oraculum.MainWindow;
+using Oraculum.ViewModels;
 
 namespace Oraculum
 {
@@ -19,6 +19,7 @@ namespace Oraculum
 		private AppModel()
 		{
 			m_taskGroup = new TaskGroup();
+			m_rollLog = null!;
 
 			LogManager.Initialize(new DebugLogDestination());
 
@@ -31,6 +32,12 @@ namespace Oraculum
 		{
 			get => VerifyAccess(m_mainWindow);
 			set => SetPropertyField(value, ref m_mainWindow);
+		}
+
+		public RollLogViewModel RollLog
+		{
+			get => VerifyAccess(m_rollLog);
+			set => SetPropertyField(value, ref m_rollLog);
 		}
 
 		public DataManager Data { get; }
@@ -57,12 +64,13 @@ namespace Oraculum
 		{
 			await state.ToThreadPool();
 
-			await Data.InitializeAsync(state.CancellationToken).ConfigureAwait(false);
+			await Data.InitializeAsync(state).ConfigureAwait(false);
 			await Settings.InitializeAsync(state.CancellationToken).ConfigureAwait(false);
 
 			await state.ToSyncContext();
 
 			m_mainWindow = new MainWindowViewModel();
+			m_rollLog = new RollLogViewModel();
 
 			await m_mainWindow.OpenSetAsync(new Guid("599d53df-5076-4f1e-af03-0abe36991eba"), state.CancellationToken).ConfigureAwait(false);
 			await m_mainWindow.OpenSetAsync(new Guid("04e1a881-9650-4cbb-8781-9f0b31391f83"), state.CancellationToken).ConfigureAwait(false);
@@ -72,14 +80,14 @@ namespace Oraculum
 		{
 			DisposableUtility.Dispose(ref m_mainWindow);
 			DisposableUtility.Dispose(ref m_taskGroup);
-			await Settings.WaitForWriteAsync(CancellationToken.None).ConfigureAwait(false);
+			await Data.WaitForWriteAsync().ConfigureAwait(false);
 		}
 
-		public void OpenTable(Guid tableId)
+		public void OpenTable(TableReference table)
 		{
 			if (m_mainWindow is null)
 				return;
-			TaskWatcher.Execute(controller => m_mainWindow.OpenTableAsync(tableId, controller), TaskGroup);
+			TaskWatcher.Execute(controller => m_mainWindow.OpenTableAsync(table, controller), TaskGroup);
 		}
 
 		public string GetOrCreateDataFolder()
@@ -96,6 +104,7 @@ namespace Oraculum
 		private static readonly Lazy<AppModel> s_appModel = new(() => new AppModel());
 
 		private MainWindowViewModel? m_mainWindow;
+		private RollLogViewModel m_rollLog;
 		private Uri m_currentTheme;
 		private TaskGroup m_taskGroup;
 	}

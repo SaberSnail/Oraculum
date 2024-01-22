@@ -117,8 +117,38 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AllTablesSetTitle" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="BulkImportTables" xml:space="preserve">
+    <value>Bulk Import Tables...</value>
+  </data>
   <data name="CardInputHint" xml:space="preserve">
     <value>card</value>
+  </data>
+  <data name="CardSuitClubDisplay" xml:space="preserve">
+    <value>Clubs</value>
+  </data>
+  <data name="CardSuitClubShort" xml:space="preserve">
+    <value>C</value>
+  </data>
+  <data name="CardSuitDiamondDisplay" xml:space="preserve">
+    <value>Diamonds</value>
+  </data>
+  <data name="CardSuitDiamondShort" xml:space="preserve">
+    <value>D</value>
+  </data>
+  <data name="CardSuitHeartDisplay" xml:space="preserve">
+    <value>Hearts</value>
+  </data>
+  <data name="CardSuitHeartShort" xml:space="preserve">
+    <value>H</value>
+  </data>
+  <data name="CardSuitSpadeDisplay" xml:space="preserve">
+    <value>Spades</value>
+  </data>
+  <data name="CardSuitSpadeShort" xml:space="preserve">
+    <value>S</value>
   </data>
   <data name="CardValueAceDisplay" xml:space="preserve">
     <value>Ace</value>
@@ -188,6 +218,14 @@
     <value>{0}S</value>
     <comment>{0} is the card short value</comment>
   </data>
+  <data name="DiceSequenceInputHint" xml:space="preserve">
+    <value>{0}, {1}</value>
+    <comment>{0} is the list of dice; {1} is the additional die</comment>
+  </data>
+  <data name="DiceSumInputHint" xml:space="preserve">
+    <value>{0}+{1}</value>
+    <comment>{0} is the list of dice; {1} is the additional die</comment>
+  </data>
   <data name="DieValueMaximumError" xml:space="preserve">
     <value>The value must be no more than {0}.</value>
     <comment>{0} is the number of sides on the die</comment>
@@ -206,6 +244,9 @@
   </data>
   <data name="ImportTables" xml:space="preserve">
     <value>Import Tables…</value>
+  </data>
+  <data name="NewTableTitle" xml:space="preserve">
+    <value>New Table</value>
   </data>
   <data name="RollButtonLabel" xml:space="preserve">
     <value>Roll</value>
@@ -227,5 +268,8 @@
   <data name="SingleDieInputHint" xml:space="preserve">
     <value>d{0}</value>
     <comment>{0} is the number of sides on the die</comment>
+  </data>
+  <data name="UnknownTableName" xml:space="preserve">
+    <value>&lt;unknown&gt;</value>
   </data>
 </root>

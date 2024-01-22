@@ -1,19 +1,21 @@
 ﻿<ResourceDictionary
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:controls="clr-namespace:GoldenAnvil.Utility.Windows.Controls;assembly=GoldenAnvil.Utility.Windows"
 	xmlns:local="clr-namespace:Oraculum.SetView"
 	xmlns:oraculum="clr-namespace:Oraculum"
-	xmlns:viewModels="clr-namespace:Oraculum.ViewModels"
 	xmlns:utility="clr-namespace:GoldenAnvil.Utility.Windows;assembly=GoldenAnvil.Utility.Windows"
-	xmlns:controls="clr-namespace:GoldenAnvil.Utility.Windows.Controls;assembly=GoldenAnvil.Utility.Windows"
-	>
+	xmlns:viewModels="clr-namespace:Oraculum.ViewModels">
 
 	<DataTemplate x:Key="SetHeaderTemplate" DataType="{x:Type local:SetViewModel}">
 		<TextBlock Text="{Binding Title}" />
 	</DataTemplate>
 
 
-	<HierarchicalDataTemplate x:Key="TableBranchTemplate" DataType="{x:Type viewModels:TreeBranch}" ItemsSource="{Binding Children}">
+	<HierarchicalDataTemplate
+		x:Key="TableBranchTemplate"
+		DataType="{x:Type viewModels:TreeBranch}"
+		ItemsSource="{Binding Children}">
 		<TextBlock Text="{Binding Title}" />
 	</HierarchicalDataTemplate>
 
@@ -22,7 +24,10 @@
 	</DataTemplate>
 
 	<DataTemplate x:Key="SetContentTemplate" DataType="{x:Type local:SetViewModel}">
-		<Grid x:Name="SetContainer" Margin="4" IsEnabled="False">
+		<Grid
+			x:Name="SetContainer"
+			Margin="4"
+			IsEnabled="False">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="Auto" />
@@ -31,58 +36,54 @@
 
 			<TextBox
 				Grid.Row="0"
-				BorderThickness="0"
 				HorizontalAlignment="Left"
 				VerticalAlignment="Top"
+				BorderThickness="0"
 				FontSize="24"
-				Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
-				/>
+				Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" />
 
 			<DockPanel Grid.Row="1" LastChildFill="False">
 				<utility:MenuButton
-					DockPanel.Dock="Right"
+					Width="{Binding ActualHeight, RelativeSource={RelativeSource Self}}"
+					Margin="4,4,0,4"
 					VerticalAlignment="Center"
 					Content="⋮"
-					Margin="4,4,0,4"
-					Width="{Binding ActualHeight, RelativeSource={RelativeSource Self}}">
+					DockPanel.Dock="Right">
 					<utility:MenuButton.Menu>
 						<ContextMenu>
-							<MenuItem Header="{x:Static oraculum:OurResources.ImportTables}" Command="{Binding Converter={x:Static utility:MethodToCommandConverter.Instance}, ConverterParameter=ImportTable}" />
+							<MenuItem Command="{Binding Converter={x:Static utility:MethodToCommandConverter.Instance}, ConverterParameter=ImportTables}" Header="{x:Static oraculum:OurResources.ImportTables}" />
+							<MenuItem Command="{Binding Converter={x:Static utility:MethodToCommandConverter.Instance}, ConverterParameter=BulkImportTables}" Header="{x:Static oraculum:OurResources.BulkImportTables}" />
 						</ContextMenu>
 					</utility:MenuButton.Menu>
 				</utility:MenuButton>
 
 				<controls:CustomTextBox
-					DockPanel.Dock="Right"
 					Width="150"
-					VerticalAlignment="Center"
 					Padding="2"
-					Text="{Binding TableFilter, UpdateSourceTrigger=PropertyChanged}"
+					VerticalAlignment="Center"
+					DockPanel.Dock="Right"
 					HintText="{x:Static oraculum:OurResources.Filter}"
-					/>
+					Text="{Binding TableFilter, UpdateSourceTrigger=PropertyChanged}" />
 			</DockPanel>
 
-			<TreeView
-				Grid.Row="2"
-				ItemsSource="{Binding Tables}"
-				>
+			<TreeView Grid.Row="2" ItemsSource="{Binding Tables}">
 				<TreeView.ItemTemplateSelector>
 					<utility:TypeDataTemplateSelector>
-						<utility:TypeDataTemplate Type="{x:Type viewModels:TreeBranch}" Template="{StaticResource TableBranchTemplate}" />
-						<utility:TypeDataTemplate Type="{x:Type viewModels:TableViewModel}" Template="{StaticResource TableHeaderTemplate}" />
+						<utility:TypeDataTemplate Template="{StaticResource TableBranchTemplate}" Type="{x:Type viewModels:TreeBranch}" />
+						<utility:TypeDataTemplate Template="{StaticResource TableHeaderTemplate}" Type="{x:Type viewModels:TableViewModel}" />
 					</utility:TypeDataTemplateSelector>
 				</TreeView.ItemTemplateSelector>
 
 				<TreeView.ItemContainerStyleSelector>
 					<utility:TypeStyleSelector>
 						<utility:TypeStyle Type="{x:Type viewModels:TreeBranch}">
-							<Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+							<Style BasedOn="{StaticResource {x:Type TreeViewItem}}" TargetType="{x:Type TreeViewItem}">
 								<Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
 								<Setter Property="IsSelected" Value="{Binding IsSelected}" />
 							</Style>
 						</utility:TypeStyle>
 						<utility:TypeStyle Type="{x:Type viewModels:TableViewModel}">
-							<Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+							<Style BasedOn="{StaticResource {x:Type TreeViewItem}}" TargetType="{x:Type TreeViewItem}">
 								<Setter Property="IsSelected" Value="{Binding IsSelected}" />
 							</Style>
 						</utility:TypeStyle>

@@ -1,51 +1,26 @@
-﻿using System.ComponentModel;
-using GoldenAnvil.Utility.Windows;
-using Oraculum.Engine;
+﻿using System;
 
 namespace Oraculum.ViewModels;
 
-public sealed class ManualDieValueGeneratorViewModel : ManualValueGeneratorViewModelBase, IDataErrorInfo
+public sealed class ManualDieValueGeneratorViewModel : ManualValueGeneratorViewModelBase
 {
-	public ManualDieValueGeneratorViewModel(DieSource source)
-		: base(source)
+	public ManualDieValueGeneratorViewModel(int config, Action onRollStarted, Action onValueGenerated)
+		: base(config, onRollStarted, onValueGenerated)
 	{
-		Source = source;
 	}
 
-	public new DieSource Source { get; }
-
-	public int? Value
+	protected override (bool IsValid, string Error) IsValid(string propertyName)
 	{
-		get => VerifyAccess(m_value);
-		set
+		if (propertyName == nameof(InputValue))
 		{
-			if (SetPropertyField(value, ref m_value) && IsValid(nameof(Value)).IsValid && m_value is not null)
-				GeneratedValue = new DieValue(value!.Value);
-		}
-	}
-
-	public string Error => "";
-
-	public string this[string propertyName] => IsValid(propertyName).Error;
-
-	public override void OnReportingFinished() => Roll();
-
-	protected override void RollCore() => Value = null;
-
-	private (bool IsValid, string Error) IsValid(string propertyName)
-	{
-		if (propertyName == nameof(Value))
-		{
-			if (Value is null)
+			if (InputValue is null)
 				return (true, "");
-			if (Value < 1)
+			if (InputValue < 1)
 				return (false, OurResources.DieValueMinimumError);
-			if (Value > Source.Sides)
-				return (false, string.Format(OurResources.DieValueMaximumError, Source.Sides));
+			if (InputValue > Configuration)
+				return (false, string.Format(OurResources.DieValueMaximumError, Configuration));
 		}
 
 		return (true, "");
 	}
-
-	private int? m_value;
 }

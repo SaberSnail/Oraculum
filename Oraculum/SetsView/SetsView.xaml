@@ -4,7 +4,10 @@
 	xmlns:local="clr-namespace:Oraculum.SetsView">
 
 	<DataTemplate DataType="{x:Type local:SetsViewModel}">
-		<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Sets" />
+		<TextBlock
+			HorizontalAlignment="Center"
+			VerticalAlignment="Center"
+			Text="Sets" />
 	</DataTemplate>
-	
+
 </ResourceDictionary>

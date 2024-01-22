@@ -113,13 +113,19 @@ namespace Oraculum.SetView
 			}
 		}
 
-		public void ImportTable()
+		public void ImportTables()
 		{
 			m_importTableWork?.Cancel();
-			m_importTableWork = TaskWatcher.Execute(ImportTableAsync, m_taskGroup);
+			m_importTableWork = TaskWatcher.Execute(ImportTablesAsync, m_taskGroup);
 		}
 
-		private async Task ImportTableAsync(TaskStateController state)
+		public void BulkImportTables()
+		{
+			m_importTableWork?.Cancel();
+			m_importTableWork = TaskWatcher.Execute(BulkImportTablesAsync, m_taskGroup);
+		}
+
+		private async Task ImportTablesAsync(TaskStateController state)
 		{
 			await state.ToSyncContext();
 
@@ -146,13 +152,46 @@ namespace Oraculum.SetView
 
 				await state.ToSyncContext();
 				AppModel.Instance.Settings.Set(SettingsKeys.LastImportPath, lastPath);
+
+				Log.Info("Finished importing tables.");
 			}
 		}
 
-		public async Task<bool> TryOpenTableAsync(Guid tableId, TaskStateController state)
+		private async Task BulkImportTablesAsync(TaskStateController state)
 		{
 			await state.ToSyncContext();
-			var table = FindNearestTable(SelectedTableNode, tableId);
+
+			var lastPath = AppModel.Instance.Settings.Get<string>(SettingsKeys.LastImportPath);
+
+			var dialog = new Microsoft.Win32.OpenFolderDialog
+			{
+				Title = OurResources.ImportTables,
+				InitialDirectory = lastPath,
+			};
+			var result = dialog.ShowDialog();
+			if (result == true)
+			{
+				var fileNames = Directory.GetFiles(dialog.FolderName, "*.*", SearchOption.AllDirectories);
+				foreach (var fileName in fileNames)
+				{
+					Log.Info($"Importing table: {fileName}");
+					lastPath = Path.GetDirectoryName(fileName);
+					var datas = await DataImportUtility.ImportTablesAsync(state, fileName).ConfigureAwait(false);
+					foreach (var (metadata, rows) in datas)
+						await AppModel.Instance.Data.AddTableAsync(metadata, rows, state.CancellationToken).ConfigureAwait(false);
+				}
+
+				await state.ToSyncContext();
+				AppModel.Instance.Settings.Set(SettingsKeys.LastImportPath, lastPath);
+
+				Log.Info("Finished importing tables.");
+			}
+		}
+
+		public async Task<bool> TryOpenTableAsync(TableReference tableRef, TaskStateController state)
+		{
+			await state.ToSyncContext();
+			var table = FindNearestTable(SelectedTableNode, tableRef);
 			if (table is not null)
 			{
 				SelectedTableNode = table;
@@ -211,6 +250,7 @@ namespace Oraculum.SetView
 		public void Dispose()
 		{
 			DisposableUtility.Dispose(ref m_taskGroup);
+			ClearTables();
 		}
 
 		private TreeBranch? GetMatchingBranch(string branchTitle, TreeNodeBase? parentNode)
@@ -227,6 +267,7 @@ namespace Oraculum.SetView
 			{
 				table.PropertyChanged -= OnTablePropertyChanged;
 				table.PropertyChanging -= OnTablePropertyChanging;
+				(table as IDisposable)?.Dispose();
 			}
 			m_tables.Clear();
 		}
@@ -271,9 +312,9 @@ namespace Oraculum.SetView
 			Tables.Refresh();
 		}
 
-		private TableViewModel? FindNearestTable(TreeNodeBase? current, Guid targetId)
+		private TableViewModel? FindNearestTable(TreeNodeBase? current, TableReference targetRef)
 		{
-			if (current is TableViewModel table && table.Id == targetId)
+			if (current is TableViewModel table && table.TableReference == targetRef)
 				return table;
 
 			List<TreeNodeBase> nodesToCheck = m_tables.Reverse<TreeNodeBase>().ToList();
@@ -291,7 +332,7 @@ namespace Oraculum.SetView
 			{
 				target = TreeNodeUtility.EnumerateNodes(node, TreeNodeTraversalOrder.BreadthFirst, false, x => x != lastCheck)
 					.OfType<TableViewModel>()
-					.FirstOrDefault(x => x.Id == targetId);
+					.FirstOrDefault(x => x.TableReference == targetRef);
 				if (target is not null)
 					break;
 				lastCheck = node;

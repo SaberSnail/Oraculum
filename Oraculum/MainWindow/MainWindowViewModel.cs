@@ -23,7 +23,6 @@ namespace Oraculum.MainWindow
 			m_openSets = new ObservableCollection<SetViewModel>();
 			OpenSets = new ReadOnlyObservableCollection<SetViewModel>(m_openSets);
 			m_openSets.Add(new SetViewModel(StaticData.AllSet));
-			RollLog = new RollLogViewModel();
 		}
 
 		public bool IsSetsPanelVisible
@@ -73,14 +72,10 @@ namespace Oraculum.MainWindow
 		public TableViewModel? SelectedTable
 		{
 			get => VerifyAccess(m_selectedTable);
-			set
-			{
-				if (SetPropertyField(value, ref m_selectedTable) && m_selectedTable is not null)
-					m_selectedTable.RollLog = RollLog;
-			}
+			set => SetPropertyField(value, ref m_selectedTable);
 		}
 
-		public RollLogViewModel? RollLog { get; }
+		public RollLogViewModel? RollLog => AppModel.Instance.RollLog;
 
 		public void SetLightMode() =>
 			AppModel.Instance.CurrentTheme = new Uri(@"/Themes/Default/Default.xaml", UriKind.Relative);
@@ -94,21 +89,21 @@ namespace Oraculum.MainWindow
 		public void ToggleTableView() =>
 			IsEditTablePanelVisible = !IsEditTablePanelVisible;
 
-		public async Task OpenTableAsync(Guid tableId, TaskStateController state)
+		public async Task OpenTableAsync(TableReference table, TaskStateController state)
 		{
 			await state.ToSyncContext();
-			if (SelectedSet is null || SelectedTable?.Id == tableId)
+			if (SelectedSet is null || table == SelectedTable?.TableReference)
 				return;
 
 			await m_loadSelectedSetWork!.TaskCompleted.ConfigureAwait(false);
-			if (!await SelectedSet.TryOpenTableAsync(tableId, state).ConfigureAwait(false))
+			if (!await SelectedSet.TryOpenTableAsync(table, state).ConfigureAwait(false))
 			{
 				await state.ToSyncContext();
 				SelectedSet = m_openSets[0];
 
 				await m_loadSelectedSetWork.TaskCompleted.ConfigureAwait(false);
-				if (!await SelectedSet.TryOpenTableAsync(tableId, state).ConfigureAwait(false))
-					Log.Error($"Failed to open table \"{tableId}\", table ID not found.");
+				if (!await SelectedSet.TryOpenTableAsync(table, state).ConfigureAwait(false))
+					Log.Error($"Failed to open table \"{table}\", table ID not found.");
 			}
 		}
 

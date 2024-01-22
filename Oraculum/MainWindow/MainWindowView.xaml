@@ -1,24 +1,30 @@
 ﻿<Window
 	x:Class="Oraculum.MainWindow.MainWindowView"
-	x:Name="ThisView"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:local="clr-namespace:Oraculum.MainWindow"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:oraculum="clr-namespace:Oraculum"
 	xmlns:system="clr-namespace:System;assembly=mscorlib"
 	xmlns:themes="clr-namespace:GoldenAnvil.Utility.Windows.Themes;assembly=GoldenAnvil.Utility.Windows"
 	xmlns:utility="clr-namespace:GoldenAnvil.Utility.Windows;assembly=GoldenAnvil.Utility.Windows"
-	mc:Ignorable="d"
-	Title="MainWindow" Height="450" Width="600">
+	x:Name="ThisView"
+	Title="MainWindow"
+	Width="600"
+	Height="450"
+	mc:Ignorable="d">
 
 	<Window.Resources>
 		<ResourceDictionary>
 			<DataTemplate DataType="{x:Type local:MainWindowViewModel}">
 				<Grid HorizontalAlignment="Stretch" Background="{DynamicResource WindowBackgroundBrush}">
 					<Grid.ColumnDefinitions>
-						<ColumnDefinition x:Name="SetsColumn" Width="*" MinWidth="{Binding ElementName=ShowSetsButton, Path=ActualWidth}" MaxWidth="{Binding ElementName=ShowSetsButton, Path=ActualWidth}" />
+						<ColumnDefinition
+							x:Name="SetsColumn"
+							Width="*"
+							MinWidth="{Binding ElementName=ShowSetsButton, Path=ActualWidth}"
+							MaxWidth="{Binding ElementName=ShowSetsButton, Path=ActualWidth}" />
 						<ColumnDefinition Width="Auto" />
 						<ColumnDefinition Width="2*" MinWidth="100" />
 						<ColumnDefinition Width="Auto" />
@@ -30,15 +36,19 @@
 							<ColumnDefinition Width="*" />
 							<ColumnDefinition Width="Auto" />
 						</Grid.ColumnDefinitions>
-						
-						<TextBlock Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Sets" />
+
+						<TextBlock
+							Grid.Column="0"
+							HorizontalAlignment="Center"
+							VerticalAlignment="Center"
+							Text="Sets" />
 
 						<Button
 							x:Name="ShowSetsButton"
 							Grid.Column="1"
-							Style="{DynamicResource HorizontalExpanderButtonStyle}"
 							BorderThickness="{DynamicResource ControlBorderLeftThickness}"
-							Command="{Binding Converter={x:Static utility:MethodToCommandConverter.Instance}, ConverterParameter=ToggleIsSetsPanelVisible}">
+							Command="{Binding Converter={x:Static utility:MethodToCommandConverter.Instance}, ConverterParameter=ToggleIsSetsPanelVisible}"
+							Style="{DynamicResource HorizontalExpanderButtonStyle}">
 							<TextBlock x:Name="ShowSetsButtonLabel" Text="{x:Static oraculum:OurResources.ShowSetsButtonLabel}">
 								<TextBlock.LayoutTransform>
 									<RotateTransform Angle="-90" />
@@ -51,33 +61,34 @@
 
 					<TabControl
 						Grid.Column="2"
-						ItemTemplate="{DynamicResource SetHeaderTemplate}"
 						ContentTemplate="{DynamicResource SetContentTemplate}"
+						ItemTemplate="{DynamicResource SetHeaderTemplate}"
 						ItemsSource="{Binding OpenSets}"
-						SelectedItem="{Binding SelectedSet}"
-						/>
+						SelectedItem="{Binding SelectedSet}" />
 
 					<GridSplitter Grid.Column="3" HorizontalAlignment="Stretch" />
 
-					<Grid x:Name="TableContainer" Grid.Column="4" VerticalAlignment="Stretch" IsEnabled="True">
+					<Grid
+						x:Name="TableContainer"
+						Grid.Column="4"
+						VerticalAlignment="Stretch"
+						IsEnabled="True">
 						<ContentPresenter
 							x:Name="TableEditPane"
-							Focusable="False"
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Stretch"
 							Content="{Binding SelectedTable}"
 							ContentTemplate="{DynamicResource TableEditTemplate}"
-							HorizontalAlignment="Stretch"
-							VerticalAlignment="Stretch"
-							Visibility="Collapsed"
-							/>
+							Focusable="False"
+							Visibility="Collapsed" />
 						<ContentPresenter
 							x:Name="TableRollPane"
-							Focusable="False"
-							Content="{Binding SelectedTable}"
-							ContentTemplate="{DynamicResource TableRollTemplate}"
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Stretch"
-							Visibility="Visible"
-							/>
+							Content="{Binding SelectedTable}"
+							ContentTemplate="{DynamicResource TableRollTemplate}"
+							Focusable="False"
+							Visibility="Visible" />
 					</Grid>
 
 				</Grid>
@@ -105,6 +116,6 @@
 
 	<ContentPresenter
 		themes:ThemesUtility.CurrentThemeUrl="{Binding Source={x:Static oraculum:AppModel.Instance}, Path=CurrentTheme}"
-		Focusable="False"
-		Content="{Binding ElementName=ThisView, Path=ViewModel}" />
+		Content="{Binding ElementName=ThisView, Path=ViewModel}"
+		Focusable="False" />
 </Window>

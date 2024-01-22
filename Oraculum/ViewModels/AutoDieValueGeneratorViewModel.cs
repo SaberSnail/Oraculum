@@ -1,19 +1,17 @@
-﻿using Oraculum.Engine;
+﻿using System;
+using Oraculum.Engine;
 
 namespace Oraculum.ViewModels;
 
 public sealed class AutoDieValueGeneratorViewModel : ValueGeneratorViewModelBase
 {
-	public AutoDieValueGeneratorViewModel(DieSource source)
-		: base(source)
+	public AutoDieValueGeneratorViewModel(int config, Action onRollStarted, Action onValueGenerated)
+		: base(config, onRollStarted, onValueGenerated)
 	{
-		Source = source;
-		MaxValue = source.Sides;
-		TargetValue = source.Sides;
-		ShouldAnimate = true;
+		MaxValue = Configuration;
+		TargetValue = Configuration;
+		ShouldAnimate = false;
 	}
-
-	public new DieSource Source { get; }
 
 	public int MaxValue { get; }
 
@@ -37,14 +35,13 @@ public sealed class AutoDieValueGeneratorViewModel : ValueGeneratorViewModelBase
 
 	public void OnTargetValueDisplayed()
 	{
-		GeneratedValue = new DieValue(m_targetValue);
+		GeneratedValue = m_targetValue;
 		StartRoll = false;
 	}
 
 	protected override void RollCore()
 	{
-		var value = Source.GetRandomValue();
-		TargetValue = value.Value;
+		TargetValue = DieUtility.GetSingleRandomValue(Configuration);
 		StartRoll = false;
 		StartRoll = true;
 	}

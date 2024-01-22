@@ -1,33 +1,32 @@
 ﻿using System;
-using GoldenAnvil.Utility;
 using Oraculum.Engine;
 
 namespace Oraculum.ViewModels;
 
 public abstract class ValueGeneratorViewModelBase : ViewModelBase
 {
-	public static ValueGeneratorViewModelBase Create(RandomSourceBase source, bool rollManually)
+	public static ValueGeneratorViewModelBase Create(RandomSourceKind kind, int config, bool rollManually, Action onRollStarted, Action onValueGenerated)
 	{
-		return source switch
+		return kind switch
 		{
-			DieSource dieSource when rollManually => new ManualDieValueGeneratorViewModel(dieSource),
-			DieSource dieSource when !rollManually => new AutoDieValueGeneratorViewModel(dieSource),
-			CardSource cardSource when rollManually => new ManualCardValueGeneratorViewModel(cardSource),
-			CardSource cardSource when !rollManually => new AutoCardValueGeneratorViewModel(cardSource),
-			_ => throw new ArgumentOutOfRangeException(),
+			(RandomSourceKind.DiceSequence or RandomSourceKind.DiceSum) when rollManually =>
+				new ManualDieValueGeneratorViewModel(config, onRollStarted, onValueGenerated),
+			(RandomSourceKind.DiceSequence or RandomSourceKind.DiceSum) when !rollManually =>
+				new AutoDieValueGeneratorViewModel(config, onRollStarted, onValueGenerated),
+			RandomSourceKind.CardSequence when rollManually =>
+				new ManualCardValueGeneratorViewModel(config, onRollStarted, onValueGenerated),
+			RandomSourceKind.CardSequence when !rollManually =>
+				new AutoCardValueGeneratorViewModel(config, onRollStarted, onValueGenerated),
+			_ => throw new NotImplementedException(),
 		};
 	}
 
-	protected ValueGeneratorViewModelBase(RandomSourceBase source)
+	protected ValueGeneratorViewModelBase(int config, Action onRollStarted, Action onValueGenerated)
 	{
-		Source = source;
+		Configuration = config;
+		m_onRollStarted = onRollStarted;
+		m_onValueGenerated = onValueGenerated;
 	}
-
-	public event EventHandler? RollStarted;
-
-	public event EventHandler<GenericEventArgs<RandomValueBase>>? ValueGenerated;
-
-	public RandomSourceBase Source { get; }
 
 	public bool IsRollStarted
 	{
@@ -37,12 +36,12 @@ public abstract class ValueGeneratorViewModelBase : ViewModelBase
 			if (SetPropertyField(value, ref m_isRollStarted) && value)
 			{
 				GeneratedValue = null;
-				RollStarted.Raise(this);
+				m_onRollStarted();
 			}
 		}
 	}
 
-	public RandomValueBase? GeneratedValue
+	public int? GeneratedValue
 	{
 		get => VerifyAccess(m_generatedValue);
 		protected set
@@ -50,7 +49,7 @@ public abstract class ValueGeneratorViewModelBase : ViewModelBase
 			if (SetPropertyField(value, ref m_generatedValue) && value is not null)
 			{
 				IsRollStarted = false;
-				ValueGenerated.Raise(this, new GenericEventArgs<RandomValueBase>(value));
+				m_onValueGenerated();
 			}
 		}
 	}
@@ -63,8 +62,12 @@ public abstract class ValueGeneratorViewModelBase : ViewModelBase
 
 	public virtual void OnReportingFinished() { }
 
+	protected int Configuration { get; }
+
 	protected virtual void RollCore() { }
 
-	private RandomValueBase? m_generatedValue;
+	private readonly Action m_onRollStarted;
+	private readonly Action m_onValueGenerated;
+	private int? m_generatedValue;
 	private bool m_isRollStarted;
 }

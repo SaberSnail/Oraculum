@@ -1,6 +1,4 @@
-﻿<ResourceDictionary
-  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
 	<Style x:Key="TabControlStyleBase" TargetType="{x:Type TabControl}">
 		<Setter Property="OverridesDefaultStyle" Value="True" />
@@ -14,56 +12,71 @@
 							<RowDefinition Height="*" />
 						</Grid.RowDefinitions>
 
+						<TabPanel
+							x:Name="HeaderPanel"
+							Grid.Row="0"
+							Margin="0,0,4,-1"
+							Panel.ZIndex="1"
+							Background="Transparent"
+							IsItemsHost="True"
+							KeyboardNavigation.TabIndex="1" />
+						<Border
+							x:Name="Border"
+							Grid.Row="1"
+							Background="{DynamicResource ContentBackgroundBrush}"
+							BorderBrush="{DynamicResource ControlBorderBaseBrush}"
+							BorderThickness="0,1,0,0"
+							CornerRadius="0"
+							KeyboardNavigation.DirectionalNavigation="Contained"
+							KeyboardNavigation.TabIndex="2"
+							KeyboardNavigation.TabNavigation="Local">
+							<ContentPresenter
+								x:Name="PART_SelectedContentHost"
+								Margin="{TemplateBinding Padding}"
+								ContentSource="SelectedContent" />
+						</Border>
+
 						<VisualStateManager.VisualStateGroups>
 							<VisualStateGroup x:Name="CommonStates">
 								<VisualState x:Name="Disabled">
 									<Storyboard>
-										<ColorAnimationUsingKeyFrames
-											Storyboard.TargetName="Border"
-                      Storyboard.TargetProperty="BorderBrush.(SolidColorBrush.Color)">
+										<ColorAnimationUsingKeyFrames Storyboard.TargetName="Border" Storyboard.TargetProperty="BorderBrush.(SolidColorBrush.Color)">
 											<EasingColorKeyFrame KeyTime="0" Value="{DynamicResource ControlBorderBaseDisabledColor}" />
 										</ColorAnimationUsingKeyFrames>
 									</Storyboard>
 								</VisualState>
 							</VisualStateGroup>
 						</VisualStateManager.VisualStateGroups>
-
-						<TabPanel
-							x:Name="HeaderPanel"
-              Grid.Row="0"
-              Panel.ZIndex="1"
-              Margin="0,0,4,-1"
-              IsItemsHost="True"
-              KeyboardNavigation.TabIndex="1"
-              Background="Transparent" />
-						<Border
-							x:Name="Border"
-              Grid.Row="1"
-              BorderThickness="0,1,0,0"
-              CornerRadius="0"
-              KeyboardNavigation.TabNavigation="Local"
-              KeyboardNavigation.DirectionalNavigation="Contained"
-              KeyboardNavigation.TabIndex="2"
-							Background="{DynamicResource ContentBackgroundBrush}"
-							BorderBrush="{DynamicResource ControlBorderBaseBrush}">
-							<ContentPresenter
-								x:Name="PART_SelectedContentHost"
-                Margin="{TemplateBinding Padding}"
-                ContentSource="SelectedContent" />
-						</Border>
 					</Grid>
 				</ControlTemplate>
 			</Setter.Value>
 		</Setter>
 	</Style>
 
-	<Style TargetType="{x:Type TabControl}" BasedOn="{StaticResource TabControlStyleBase}" />
+	<Style BasedOn="{StaticResource TabControlStyleBase}" TargetType="{x:Type TabControl}" />
 
 	<Style x:Key="TabItemStyleBase" TargetType="{x:Type TabItem}">
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="{x:Type TabItem}">
 					<Grid x:Name="Root">
+						<Border
+							x:Name="Border"
+							Margin="0,0,-4,0"
+							Background="{DynamicResource ControlBackgroundBaseBrush}"
+							BorderBrush="{DynamicResource ControlBorderBaseBrush}"
+							BorderThickness="1"
+							CornerRadius="2,12,0,0"
+							TextBlock.Foreground="{DynamicResource FontBrush}">
+
+							<ContentPresenter
+								x:Name="ContentSite"
+								Margin="12,2,12,2"
+								HorizontalAlignment="Center"
+								VerticalAlignment="Center"
+								ContentSource="Header"
+								RecognizesAccessKey="True" />
+						</Border>
 
 						<VisualStateManager.VisualStateGroups>
 							<VisualStateGroup x:Name="CommonStates">
@@ -71,14 +84,10 @@
 
 								<VisualState x:Name="Selected">
 									<Storyboard>
-										<ColorAnimationUsingKeyFrames
-											Storyboard.TargetName="Border"
-                      Storyboard.TargetProperty="Background.(SolidColorBrush.Color)">
+										<ColorAnimationUsingKeyFrames Storyboard.TargetName="Border" Storyboard.TargetProperty="Background.(SolidColorBrush.Color)">
 											<EasingColorKeyFrame KeyTime="0" Value="{DynamicResource ContentBackgroundColor}" />
 										</ColorAnimationUsingKeyFrames>
-										<ThicknessAnimationUsingKeyFrames
-											Storyboard.TargetProperty="(Border.BorderThickness)"
-                      Storyboard.TargetName="Border">
+										<ThicknessAnimationUsingKeyFrames Storyboard.TargetName="Border" Storyboard.TargetProperty="(Border.BorderThickness)">
 											<EasingThicknessKeyFrame KeyTime="0" Value="1,1,1,0" />
 										</ThicknessAnimationUsingKeyFrames>
 									</Storyboard>
@@ -86,64 +95,30 @@
 
 								<VisualState x:Name="MouseOver">
 									<Storyboard>
-										<ColorAnimationUsingKeyFrames
-											Storyboard.TargetName="Border"
-											Storyboard.TargetProperty="Background.(SolidColorBrush.Color)">
-											<EasingColorKeyFrame
-												KeyTime="0"
-												Value="{DynamicResource ControlBackgroundBaseHoveredColor}" />
+										<ColorAnimationUsingKeyFrames Storyboard.TargetName="Border" Storyboard.TargetProperty="Background.(SolidColorBrush.Color)">
+											<EasingColorKeyFrame KeyTime="0" Value="{DynamicResource ControlBackgroundBaseHoveredColor}" />
 										</ColorAnimationUsingKeyFrames>
-										<ColorAnimationUsingKeyFrames
-											Storyboard.TargetName="Border"
-											Storyboard.TargetProperty="BorderBrush.(SolidColorBrush.Color)">
-											<EasingColorKeyFrame
-												KeyTime="0"
-												Value="{DynamicResource ControlBorderBaseHoveredColor}" />
+										<ColorAnimationUsingKeyFrames Storyboard.TargetName="Border" Storyboard.TargetProperty="BorderBrush.(SolidColorBrush.Color)">
+											<EasingColorKeyFrame KeyTime="0" Value="{DynamicResource ControlBorderBaseHoveredColor}" />
 										</ColorAnimationUsingKeyFrames>
 									</Storyboard>
 								</VisualState>
 
 								<VisualState x:Name="Disabled">
 									<Storyboard>
-										<ColorAnimationUsingKeyFrames
-											Storyboard.TargetName="Border"
-                      Storyboard.TargetProperty="Background.(SolidColorBrush.Color)">
+										<ColorAnimationUsingKeyFrames Storyboard.TargetName="Border" Storyboard.TargetProperty="Background.(SolidColorBrush.Color)">
 											<EasingColorKeyFrame KeyTime="0" Value="{DynamicResource ControlBackgroundBaseDisabledColor}" />
 										</ColorAnimationUsingKeyFrames>
-										<ColorAnimationUsingKeyFrames
-											Storyboard.TargetName="Border"
-                      Storyboard.TargetProperty="BorderBrush.(SolidColorBrush.Color)">
-											<EasingColorKeyFrame KeyTime="0" Value="{DynamicResource ControlBackgroundBaseDisabledColor}"/>
+										<ColorAnimationUsingKeyFrames Storyboard.TargetName="Border" Storyboard.TargetProperty="BorderBrush.(SolidColorBrush.Color)">
+											<EasingColorKeyFrame KeyTime="0" Value="{DynamicResource ControlBackgroundBaseDisabledColor}" />
 										</ColorAnimationUsingKeyFrames>
-										<ColorAnimationUsingKeyFrames
-											Storyboard.TargetName="Border"
-											Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)">
-											<EasingColorKeyFrame
-												KeyTime="0"
-												Value="{DynamicResource FontDisabledColor}" />
+										<ColorAnimationUsingKeyFrames Storyboard.TargetName="Border" Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)">
+											<EasingColorKeyFrame KeyTime="0" Value="{DynamicResource FontDisabledColor}" />
 										</ColorAnimationUsingKeyFrames>
 									</Storyboard>
 								</VisualState>
 							</VisualStateGroup>
 						</VisualStateManager.VisualStateGroups>
-
-						<Border
-							x:Name="Border"
-              Margin="0,0,-4,0"
-              BorderThickness="1"
-              CornerRadius="2,12,0,0"
-							TextBlock.Foreground="{DynamicResource FontBrush}"
-							BorderBrush="{DynamicResource ControlBorderBaseBrush}"
-							Background="{DynamicResource ControlBackgroundBaseBrush}">
-
-							<ContentPresenter
-								x:Name="ContentSite"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Center"
-                ContentSource="Header"
-                Margin="12,2,12,2"
-                RecognizesAccessKey="True" />
-						</Border>
 					</Grid>
 
 					<ControlTemplate.Triggers>
@@ -159,6 +134,6 @@
 		</Setter>
 	</Style>
 
-	<Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource TabItemStyleBase}" />
+	<Style BasedOn="{StaticResource TabItemStyleBase}" TargetType="{x:Type TabItem}" />
 
 </ResourceDictionary>

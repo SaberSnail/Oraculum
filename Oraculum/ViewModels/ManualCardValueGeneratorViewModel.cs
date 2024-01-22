@@ -1,14 +1,26 @@
-﻿using Oraculum.Engine;
+﻿using System;
 
 namespace Oraculum.ViewModels;
 
 public sealed class ManualCardValueGeneratorViewModel : ManualValueGeneratorViewModelBase
 {
-	public ManualCardValueGeneratorViewModel(CardSource source)
-		: base(source)
+	public ManualCardValueGeneratorViewModel(int config, Action onRollStarted, Action onValueGenerated)
+		: base(config, onRollStarted, onValueGenerated)
 	{
-		Source = source;
 	}
 
-	public new CardSource Source { get; }
+	protected override (bool IsValid, string Error) IsValid(string propertyName)
+	{
+		if (propertyName == nameof(InputValue))
+		{
+			if (InputValue is null)
+				return (true, "");
+			if (InputValue < 1)
+				return (false, OurResources.DieValueMinimumError);
+			if (InputValue > Configuration)
+				return (false, string.Format(OurResources.DieValueMaximumError, Configuration));
+		}
+
+		return (true, "");
+	}
 }

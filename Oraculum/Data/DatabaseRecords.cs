@@ -17,7 +17,7 @@ namespace Oraculum.Data
 			Version = 1,
 			Created = DateTime.Now,
 			Modified = DateTime.Now,
-			Title = "All",
+			Title = OurResources.AllTablesSetTitle,
 		};
 	}
 
@@ -43,58 +43,64 @@ namespace Oraculum.Data
 		public IReadOnlyList<string> Groups { get; init; } = Array.Empty<string>();
 	}
 
-	public readonly record struct TableMetadata
+	public class TableMetadataDto
 	{
-		public TableMetadata(Guid Id, string? Source, string? Author, int Version, DateTime Created, DateTime Modified, string Title, IReadOnlyList<RandomSourceData> RandomPlan, IReadOnlyList<string>? Groups = null)
+		public TableMetadataDto(Guid tableId, string title, string? source, string? author, int version, DateOnly created, DateOnly? modified, string? description, RandomPlan randomPlan, IReadOnlyList<string>? groups)
 		{
-			this.Id = Id;
-			this.Source = Source;
-			this.Author = Author;
-			this.Version = Version;
-			this.Created = Created;
-			this.Modified = Modified;
-			this.Title = Title;
-			this.RandomPlan = RandomPlan;
-			this.Groups = Groups ?? Array.Empty<string>();
+			TableId = tableId;
+			Title = title;
+			Source = source;
+			Author = author;
+			Version = version;
+			Created = created;
+			Modified = modified ?? created;
+			Description = description;
+			RandomPlan = randomPlan;
+			Groups = groups ?? Array.Empty<string>();
 		}
 
-		public Guid Id { get; init; }
+		public Guid TableId { get; init; }
+		public string Title { get; init; }
 		public string? Source { get; init; }
 		public string? Author { get; init; }
 		public int Version { get; init; }
-		public DateTime Created { get; init; }
-		public DateTime Modified { get; init; }
-		public string Title { get; init; }
-		public IReadOnlyList<RandomSourceData> RandomPlan { get; init; } = Array.Empty<RandomSourceData>();
-		public IReadOnlyList<string> Groups { get; init; } = Array.Empty<string>();
+		public DateOnly Created { get; init; }
+		public DateOnly Modified { get; init; }
+		public string? Description { get; init; }
+		public RandomPlan RandomPlan { get; init; }
+		public IReadOnlyList<string> Groups { get; init; }
 	}
 
-	public struct RandomSourceData : IEquatable<RandomSourceData>
+	public class RandomPlan : IEquatable<RandomPlan>
 	{
-		public RandomSourceData(RandomSourceKind Kind, IReadOnlyList<int>? Dice = null)
+		public RandomPlan(RandomSourceKind kind, params int[] configurations)
+			: this(kind, (IReadOnlyList<int>) configurations)
 		{
-			this.Kind = Kind;
-			this.Dice = Dice ?? Array.Empty<int>();
+		}
+
+		public RandomPlan(RandomSourceKind kind, IReadOnlyList<int> configurations)
+		{
+			Kind = kind;
+			Configurations = configurations;
 		}
 
 		public RandomSourceKind Kind { get; init; }
-		public IReadOnlyList<int> Dice { get; init; } = Array.Empty<int>();
+		public IReadOnlyList<int> Configurations { get; init; }
 
-		public override bool Equals(object? that) =>
-			that is RandomSourceData data && Equals(data);
+		public override bool Equals(object? that) => Equals(that as RandomPlan);
 
-		public bool Equals(RandomSourceData that) =>
-			(Kind == that.Kind) && Dice.SequenceEqual(that.Dice ?? Array.Empty<int>());
+		public bool Equals(RandomPlan? that) =>
+			that is { } && Kind == that.Kind && Configurations.SequenceEqual(that.Configurations);
 
 		public override int GetHashCode() =>
-			HashCodeUtility.CombineHashCodes(Kind.GetHashCode(), Dice.GetHashCode());
+			HashCodeUtility.CombineHashCodes(Kind.GetHashCode(), Configurations.GetHashCode());
 
-		public static bool operator ==(RandomSourceData left, RandomSourceData right) =>
+		public static bool operator ==(RandomPlan left, RandomPlan right) =>
 			left.Equals(right);
 
-		public static bool operator !=(RandomSourceData left, RandomSourceData right) =>
+		public static bool operator !=(RandomPlan left, RandomPlan right) =>
 			!left.Equals(right);
 	}
 
-	public readonly record struct RowData(int Min, int Max, string Output, Guid? Next);
+	public readonly record struct RowDataDto(IReadOnlyList<int> Min, IReadOnlyList<int> Max, string Output);
 }

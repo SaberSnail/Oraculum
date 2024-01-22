@@ -1,6 +1,4 @@
-﻿<ResourceDictionary
-  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
 	<Style x:Key="RollResultParagraphStyle" TargetType="{x:Type Paragraph}">
 		<Setter Property="FontSize" Value="{DynamicResource DefaultFontSize}" />
@@ -12,8 +10,7 @@
 		<Setter Property="FontWeight" Value="Bold" />
 	</Style>
 
-	<Style x:Key="RollResultOutputRunStyle" TargetType="{x:Type Run}">
-	</Style>
+	<Style x:Key="RollResultOutputRunStyle" TargetType="{x:Type Run}" />
 
 	<Style x:Key="RollResultTableParagraphStyle" TargetType="{x:Type Paragraph}">
 		<Setter Property="FontSize" Value="{DynamicResource LargeFontSize}" />
@@ -23,6 +20,10 @@
 
 	<Style x:Key="RollResultTableTitleRunStyle" TargetType="{x:Type Run}">
 		<Setter Property="FontWeight" Value="Bold" />
+	</Style>
+
+	<Style x:Key="UnknownTableRunStyle" TargetType="{x:Type Run}">
+		<Setter Property="Foreground" Value="{DynamicResource UnknownTableTitleBrush}" />
 	</Style>
 
 </ResourceDictionary>

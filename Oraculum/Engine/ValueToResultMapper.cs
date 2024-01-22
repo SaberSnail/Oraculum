@@ -2,37 +2,29 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using GoldenAnvil.Utility;
 using Oraculum.Data;
 
 namespace Oraculum.Engine;
 
 public sealed class ValueToResultMapper
 {
-	public ValueToResultMapper(Guid tableId, string? tableTitle, IReadOnlyList<RowData> rows)
+	public ValueToResultMapper(TableReference tableReference, RandomSourceBase randomSource, IReadOnlyList<RowDataDto> rows)
 	{
-		m_tableId = tableId;
-		m_tableTitle = tableTitle;
-		m_valueToRow = rows
-			.SelectMany(x => Enumerable.Range(x.Min, x.Max - x.Min + 1).Select(y => KeyValuePair.Create(y, x)))
-			.ToDictionary(x => x.Key, x => (RowData?) x.Value)
+		m_tableReference = tableReference ?? throw new ArgumentNullException(nameof(tableReference));
+		m_valueToOutput = rows
+			.SelectMany(row => randomSource.EnumerateValues(row.Min, row.Max).Select(value => (Value: value, Row: row)))
+			.ToDictionary(x => x.Value, x => x.Row.Output)
 			.AsReadOnly();
 	}
 
 	public RollResult GetResult(RandomValueBase value)
 	{
-		var row = m_valueToRow.GetValueOrDefault(value.Value);
-		return new RollResult
-		{
-			TableId = m_tableId,
-			TableTitle = m_tableTitle,
-			Key = value.DisplayText,
-			Output = row?.Output,
-			Next = row?.Next,
-		};
+		if (!m_valueToOutput.TryGetValue(value, out var output))
+			throw new InvalidOperationException($"No row found for value {value}.");
+
+		return new RollResult(m_tableReference, value.DisplayText, output);
 	}
 
-	readonly Guid m_tableId;
-	readonly string? m_tableTitle;
-	readonly ReadOnlyDictionary<int, RowData?> m_valueToRow;
+	readonly TableReference m_tableReference;
+	readonly ReadOnlyDictionary<RandomValueBase, string> m_valueToOutput;
 }

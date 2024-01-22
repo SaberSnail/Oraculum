@@ -1,9 +1,8 @@
 ﻿<ResourceDictionary
-  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:controls="clr-namespace:GoldenAnvil.Utility.Windows.Controls;assembly=GoldenAnvil.Utility.Windows"
-	xmlns:utility="clr-namespace:GoldenAnvil.Utility.Windows;assembly=GoldenAnvil.Utility.Windows"
-  >
+	xmlns:utility="clr-namespace:GoldenAnvil.Utility.Windows;assembly=GoldenAnvil.Utility.Windows">
 
 	<Style x:Key="CustomTextBoxDefaultStyle" TargetType="{x:Type controls:CustomTextBox}">
 		<Setter Property="SnapsToDevicePixels" Value="True" />
@@ -27,6 +26,23 @@
 						<Border.BorderBrush>
 							<SolidColorBrush Color="{DynamicResource ControlBorderBaseColor}" />
 						</Border.BorderBrush>
+						<Grid>
+							<ScrollViewer x:Name="PART_ContentHost" Margin="0" />
+							<TextBlock
+								VerticalAlignment="Center"
+								Foreground="{DynamicResource FontLightBrush}"
+								IsHitTestVisible="False"
+								Text="{TemplateBinding HintText}"
+								Visibility="{TemplateBinding Text,
+								                             Converter={x:Static utility:CommonConverters.IsNullOrEmptyToInverseVisibility}}">
+								<TextBlock.Margin>
+									<MultiBinding Converter="{x:Static utility:CommonConverters.ThicknessSum}">
+										<Binding Path="Padding" RelativeSource="{RelativeSource TemplatedParent}" />
+										<Binding Source="{StaticResource ContentPadding}" />
+									</MultiBinding>
+								</TextBlock.Margin>
+							</TextBlock>
+						</Grid>
 						<VisualStateManager.VisualStateGroups>
 							<VisualStateGroup x:Name="CommonStates">
 								<VisualState x:Name="Normal" />
@@ -54,23 +70,6 @@
 								</VisualState>
 							</VisualStateGroup>
 						</VisualStateManager.VisualStateGroups>
-						<Grid>
-							<ScrollViewer x:Name="PART_ContentHost" Margin="0" />
-							<TextBlock
-								VerticalAlignment="Center"
-								IsHitTestVisible="False"
-								Foreground="{DynamicResource FontLightBrush}"
-								Visibility="{TemplateBinding Text, Converter={x:Static utility:CommonConverters.IsNullOrEmptyToInverseVisibility}}"
-								Text="{TemplateBinding HintText}"
-								>
-								<TextBlock.Margin>
-									<MultiBinding Converter="{x:Static utility:CommonConverters.ThicknessSum}">
-										<Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Padding" />
-										<Binding Source="{StaticResource ContentPadding}" />
-									</MultiBinding>
-								</TextBlock.Margin>
-							</TextBlock>
-						</Grid>
 					</Border>
 				</ControlTemplate>
 			</Setter.Value>

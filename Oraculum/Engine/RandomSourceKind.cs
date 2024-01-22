@@ -2,7 +2,8 @@
 {
 	public enum RandomSourceKind
   {
-    Die,
-    Card,
+    DiceSum,
+    DiceSequence,
+    CardSequence,
   }
 }

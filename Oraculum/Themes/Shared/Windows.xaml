@@ -1,12 +1,10 @@
-﻿<ResourceDictionary
-	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-	<Style TargetType="{x:Type Window}" BasedOn="{StaticResource {x:Type Window}}">
+	<Style BasedOn="{StaticResource {x:Type Window}}" TargetType="{x:Type Window}">
 		<Setter Property="OverridesDefaultStyle" Value="true" />
 		<Setter Property="Foreground" Value="{DynamicResource FontBrush}" />
 		<Setter Property="FontSize" Value="{DynamicResource DefaultFontSize}" />
 		<Setter Property="SnapsToDevicePixels" Value="true" />
 	</Style>
-	
+
 </ResourceDictionary>

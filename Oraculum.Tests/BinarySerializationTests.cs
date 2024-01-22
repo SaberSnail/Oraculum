@@ -47,7 +47,7 @@ namespace Oraculum.Tests
 			Serializer.Serialize(stream, originalData);
 			stream.Seek(0, SeekOrigin.Begin);
 
-			var newData = Serializer.Deserialize<RowData>(stream);
+			var newData = Serializer.Deserialize<RowDataDto>(stream);
 
 			newData.Should().BeEquivalentTo(originalData);
 		}
@@ -69,27 +69,27 @@ namespace Oraculum.Tests
 			};
 		}
 
-		private static TableMetadata CreateTable()
+		private static TableMetadataDto CreateTable()
 		{
 			var tableId = Guid.NewGuid();
-			var tableDateTime = DateTime.Now;
+			var tableDateTime = DateOnly.FromDateTime(DateTime.Now);
 
-			return new TableMetadata
-			{
-				Id = tableId,
-				Author = "SaberSnail",
-				Version = 1,
-				Created = tableDateTime,
-				Modified = tableDateTime,
-				Groups = new[] { "Ironsworn", "Oracle" },
-				Title = "50/50",
-				RandomPlan = new[] { new RandomSourceData { Dice = new[] { 100 } } },
-			};
+			return new TableMetadataDto(
+				tableId: tableId,
+				title: "50/50",
+				source: "Ironsworn",
+				author: "SaberSnail",
+				version: 1,
+				created: tableDateTime,
+				modified: tableDateTime,
+				description: null,
+				randomPlan: new RandomPlan(RandomSourceKind.DiceSequence, 100),
+				groups: new[] { "Ironsworn", "Oracle" });
 		}
 
-		private static RowData CreateRow()
+		private static RowDataDto CreateRow()
 		{
-			return new RowData
+			return new RowDataDto
 			{
 				Min = 1,
 				Max = 50,

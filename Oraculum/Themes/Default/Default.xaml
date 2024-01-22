@@ -3,7 +3,7 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:system="clr-namespace:System;assembly=mscorlib">
 
-	<!-- Misc Brushes -->
+	<!--  Misc Brushes  -->
 	<Color x:Key="WindowBackgroundColor">#DDDDDD</Color>
 	<Color x:Key="ContentBackgroundColor">#FFFFFF</Color>
 	<Color x:Key="ContentBackgroundHighContrastColor">#EEEEEE</Color>
@@ -15,16 +15,29 @@
 	<Color x:Key="FontColor">#111111</Color>
 	<Color x:Key="FontLightColor">#555555</Color>
 	<Color x:Key="FontDisabledColor">#777777</Color>
-	
+
 	<SolidColorBrush x:Key="FontBrush" Color="{StaticResource FontColor}" />
 	<SolidColorBrush x:Key="FontLightBrush" Color="{StaticResource FontLightColor}" />
 	<SolidColorBrush x:Key="FontDisabledBrush" Color="{StaticResource FontDisabledColor}" />
 
-	<!-- Controls -->
-	<Thickness x:Key="ControlBorderThickness" Left="2" Top="2" Right="2" Bottom="2" />
-	<Thickness x:Key="ControlBorderLeftRightThickness" Left="2" Right="2" />
+	<!--  Controls  -->
+	<Thickness
+		x:Key="ControlBorderThickness"
+		Bottom="2"
+		Left="2"
+		Right="2"
+		Top="2" />
+	<Thickness
+		x:Key="ControlBorderLeftRightThickness"
+		Left="2"
+		Right="2" />
 	<Thickness x:Key="ControlBorderLeftThickness" Left="2" />
-	<CornerRadius x:Key="ControlBorderRadius" TopLeft="4" TopRight="4" BottomRight="4" BottomLeft="4" />
+	<CornerRadius
+		x:Key="ControlBorderRadius"
+		BottomLeft="4"
+		BottomRight="4"
+		TopLeft="4"
+		TopRight="4" />
 
 	<Color x:Key="ControlForegroundBaseColor">#111111</Color>
 	<Color x:Key="ControlForegroundBaseDisabledColor">#909090</Color>
@@ -58,7 +71,9 @@
 	<SolidColorBrush x:Key="ControlBorderBaseHoveredBrush" Color="{StaticResource ControlBorderBaseHoveredColor}" />
 	<SolidColorBrush x:Key="ControlBorderBasePressedBrush" Color="{StaticResource ControlBorderBasePressedColor}" />
 
-	<!-- Splitters -->
+	<!--  Splitters  -->
 	<SolidColorBrush x:Key="SplitterBackgroundBrush" Color="#D0D0D0" />
+
+	<SolidColorBrush x:Key="UnknownTableTitleBrush" Color="#A00000" />
 
 </ResourceDictionary>

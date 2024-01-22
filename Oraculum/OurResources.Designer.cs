@@ -61,11 +61,101 @@ namespace Oraculum {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All.
+        /// </summary>
+        public static string AllTablesSetTitle {
+            get {
+                return ResourceManager.GetString("AllTablesSetTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bulk Import Tables....
+        /// </summary>
+        public static string BulkImportTables {
+            get {
+                return ResourceManager.GetString("BulkImportTables", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to card.
         /// </summary>
         public static string CardInputHint {
             get {
                 return ResourceManager.GetString("CardInputHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clubs.
+        /// </summary>
+        public static string CardSuitClubDisplay {
+            get {
+                return ResourceManager.GetString("CardSuitClubDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to C.
+        /// </summary>
+        public static string CardSuitClubShort {
+            get {
+                return ResourceManager.GetString("CardSuitClubShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Diamonds.
+        /// </summary>
+        public static string CardSuitDiamondDisplay {
+            get {
+                return ResourceManager.GetString("CardSuitDiamondDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to D.
+        /// </summary>
+        public static string CardSuitDiamondShort {
+            get {
+                return ResourceManager.GetString("CardSuitDiamondShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hearts.
+        /// </summary>
+        public static string CardSuitHeartDisplay {
+            get {
+                return ResourceManager.GetString("CardSuitHeartDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to H.
+        /// </summary>
+        public static string CardSuitHeartShort {
+            get {
+                return ResourceManager.GetString("CardSuitHeartShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Spades.
+        /// </summary>
+        public static string CardSuitSpadeDisplay {
+            get {
+                return ResourceManager.GetString("CardSuitSpadeDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to S.
+        /// </summary>
+        public static string CardSuitSpadeShort {
+            get {
+                return ResourceManager.GetString("CardSuitSpadeShort", resourceCulture);
             }
         }
         
@@ -250,6 +340,24 @@ namespace Oraculum {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0}, {1}.
+        /// </summary>
+        public static string DiceSequenceInputHint {
+            get {
+                return ResourceManager.GetString("DiceSequenceInputHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}+{1}.
+        /// </summary>
+        public static string DiceSumInputHint {
+            get {
+                return ResourceManager.GetString("DiceSumInputHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The value must be no more than {0}..
         /// </summary>
         public static string DieValueMaximumError {
@@ -304,6 +412,15 @@ namespace Oraculum {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to New Table.
+        /// </summary>
+        public static string NewTableTitle {
+            get {
+                return ResourceManager.GetString("NewTableTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Roll.
         /// </summary>
         public static string RollButtonLabel {
@@ -354,6 +471,15 @@ namespace Oraculum {
         public static string SingleDieInputHint {
             get {
                 return ResourceManager.GetString("SingleDieInputHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;unknown&gt;.
+        /// </summary>
+        public static string UnknownTableName {
+            get {
+                return ResourceManager.GetString("UnknownTableName", resourceCulture);
             }
         }
     }

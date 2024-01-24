@@ -30,6 +30,18 @@ public static class DieUtility
 	{
 		var configs = configurations.AsReadOnlyList();
 		var values = new List<int>(value.Values);
+
+		if (values.Count == 1 && configs.Count > 1)
+		{
+			var nextValue = values[0] + 1;
+			if (nextValue > configs.Sum(x => x))
+				return null;
+			return new DieValue(nextValue);
+		}
+
+		if (values.Count != configs.Count)
+			throw new InvalidOperationException("Number of values must match number of configurations.");
+
 		for (var index = values.Count - 1; index >= 0; index--)
 		{
 			var (nextValue, isOverflow) = GetNextValue(values[index], configs[index]);

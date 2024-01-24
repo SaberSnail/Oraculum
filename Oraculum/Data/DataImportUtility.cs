@@ -174,42 +174,41 @@ namespace Oraculum.Data
 			var transformedRows = rowInfos;
 
 			if (randomPlan is null)
-			{
 				randomPlan = GuessRandomPlan(rowInfos);
-				if (rowInfos[0].GuessedConfigs is null)
-				{
-					transformedRows = ApplyRowWeights().AsReadOnlyList();
 
-					IEnumerable<(RandomValueBase Value1, RandomValueBase? Value2, IReadOnlyList<int>? GuessedConfigs, string Output)> ApplyRowWeights()
+			if (rowInfos[0].GuessedConfigs is null)
+			{
+				transformedRows = ApplyRowWeights().AsReadOnlyList();
+
+				IEnumerable<(RandomValueBase Value1, RandomValueBase? Value2, IReadOnlyList<int>? GuessedConfigs, string Output)> ApplyRowWeights()
+				{
+					var currentWeight = 0;
+					foreach (var rowInfo in rowInfos)
 					{
-						var currentWeight = 0;
-						foreach (var rowInfo in rowInfos)
-						{
-							currentWeight += rowInfo.Value1.Values[0];
-							yield return (new DieValue(currentWeight), null, null, rowInfo.Output);
-						}
+						currentWeight += rowInfo.Value1.Values[0];
+						yield return (new DieValue(currentWeight), null, null, rowInfo.Output);
 					}
 				}
-				else if (rowInfos[0].Value1.Values.Count == 1 && randomPlan.Configurations.Count > 1)
-				{
-					transformedRows = ApplySequenceTransform().AsReadOnlyList();
+			}
+			else if (rowInfos[0].Value1.Values.Count == 1 && randomPlan.Configurations.Count > 1 && randomPlan.Kind == RandomSourceKind.DiceSequence)
+			{
+				transformedRows = ApplySequenceTransform().AsReadOnlyList();
 
-					IEnumerable<(RandomValueBase Value1, RandomValueBase? Value2, IReadOnlyList<int>? GuessedConfigs, string Output)> ApplySequenceTransform()
+				IEnumerable<(RandomValueBase Value1, RandomValueBase? Value2, IReadOnlyList<int>? GuessedConfigs, string Output)> ApplySequenceTransform()
+				{
+					foreach (var rowInfo in rowInfos)
 					{
-						foreach (var rowInfo in rowInfos)
+						var value1 = new DieValue(DigitCollection.Create(rowInfo.Value1.Values[0])
+							.Select(x => x)
+							.AsReadOnlyList());
+						RandomValueBase? value2 = null;
+						if (rowInfo.Value2 is not null)
 						{
-							var value1 = new DieValue(DigitCollection.Create(rowInfo.Value1.Values[0])
+							value2 = new DieValue(DigitCollection.Create(rowInfo.Value2.Values[0])
 								.Select(x => x)
 								.AsReadOnlyList());
-							RandomValueBase? value2 = null;
-							if (rowInfo.Value2 is not null)
-							{
-								value2 = new DieValue(DigitCollection.Create(rowInfo.Value2.Values[0])
-									.Select(x => x)
-									.AsReadOnlyList());
-							}
-							yield return (value1, value2, rowInfo.GuessedConfigs, rowInfo.Output);
 						}
+						yield return (value1, value2, rowInfo.GuessedConfigs, rowInfo.Output);
 					}
 				}
 			}
@@ -288,16 +287,20 @@ namespace Oraculum.Data
 				var minValue = rowInfos.Min(x => x.Value1.Values[0]);
 				if (sourceKind == RandomSourceKind.DiceSequence && configs.Count == 1 && minValue > 1)
 				{
+					var maxValue = rowInfos.Max(x => (x.Value2 ?? x.Value1).Values[0]);
 					DigitCollection minDigits = minValue;
-					DigitCollection maxDigits = rowInfos.Max(x => (x.Value2 ?? x.Value1).Values[0]);
+					DigitCollection maxDigits = maxValue;
 
-					if (minDigits.Count == maxDigits.Count)
+					if (minDigits.Count == maxDigits.Count && minDigits.Count > 1)
 					{
 						var hasValidMinValue = minDigits.All(x => x == 1);
 						var hasValidMaxValue = maxDigits.All(x => x == maxDigits[0]);
-						var hasCorrectRowCount = ((int) Math.Pow(maxDigits[0], maxDigits.Count)) == rowInfos.Count;
-						if (hasValidMinValue && hasValidMaxValue && hasCorrectRowCount)
+						if (hasValidMinValue && hasValidMaxValue)
 							return new RandomPlan(sourceKind, maxDigits.ToArray());
+					}
+					else if (maxValue % minValue == 0)
+					{
+						return new RandomPlan(RandomSourceKind.DiceSum, Enumerable.Repeat(maxValue / minValue, minValue).ToArray());
 					}
 
 					throw new FormatException("Unable to guess random plan from rows.");

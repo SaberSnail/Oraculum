@@ -126,6 +126,10 @@
   <data name="CardInputHint" xml:space="preserve">
     <value>card</value>
   </data>
+  <data name="CardSequenceInputHint" xml:space="preserve">
+    <value>{0}, {1}</value>
+    <comment>{0} is the list of cards; {1} is the additional card</comment>
+  </data>
   <data name="CardSuitClubDisplay" xml:space="preserve">
     <value>Clubs</value>
   </data>

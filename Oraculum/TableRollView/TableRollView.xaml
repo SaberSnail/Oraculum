@@ -9,6 +9,8 @@
 	xmlns:utility="clr-namespace:GoldenAnvil.Utility.Windows;assembly=GoldenAnvil.Utility.Windows"
 	xmlns:viewModels="clr-namespace:Oraculum.ViewModels">
 
+	<DataTemplate DataType="{x:Type viewModels:FixedValueGeneratorViewModel}" />
+
 	<DataTemplate DataType="{x:Type viewModels:AutoDieValueGeneratorViewModel}">
 		<ui:DiceFlipPanel
 			Margin="2"
@@ -24,6 +26,19 @@
 	</DataTemplate>
 
 	<DataTemplate DataType="{x:Type viewModels:ManualDieValueGeneratorViewModel}">
+		<DataTemplate.Resources>
+			<ResourceDictionary>
+				<ControlTemplate x:Key="ValidationTemplate">
+					<Border
+						Background="Transparent"
+						BorderBrush="Red"
+						BorderThickness="1"
+						ToolTip="{Binding Path=/ErrorContent}">
+						<AdornedElementPlaceholder />
+					</Border>
+				</ControlTemplate>
+			</ResourceDictionary>
+		</DataTemplate.Resources>
 		<controls:CustomTextBox
 			x:Name="TextBox"
 			Width="34"
@@ -31,11 +46,11 @@
 			Margin="2"
 			ForceTextSourceUpdateOnEnter="True"
 			HintText="{Binding HintText}"
-			Text="{Binding Value, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, ValidatesOnDataErrors=True, Delay=1500}"
-			ToolTip="{Binding RelativeSource={RelativeSource self}, Path=(Validation.Errors)[0].ErrorContent}">
-			<i:Interaction.Behaviors>
+			Text="{Binding InputValue, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, ValidatesOnDataErrors=True, Delay=1500}"
+			Validation.ErrorTemplate="{StaticResource ValidationTemplate}">
+			<!--<i:Interaction.Behaviors>
 				<behaviors:FocusAfterEventBehavior EventName="RollStarted" />
-			</i:Interaction.Behaviors>
+			</i:Interaction.Behaviors>-->
 		</controls:CustomTextBox>
 	</DataTemplate>
 
@@ -81,6 +96,9 @@
 								<WrapPanel />
 							</ItemsPanelTemplate>
 						</ItemsControl.ItemsPanel>
+						<i:Interaction.Behaviors>
+							<behaviors:FocusAfterEventBehavior EventName="RollStarted" />
+						</i:Interaction.Behaviors>
 					</ItemsControl>
 				</DockPanel>
 			</DockPanel>

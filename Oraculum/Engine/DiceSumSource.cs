@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using GoldenAnvil.Utility;
 
@@ -31,22 +30,18 @@ public sealed class DiceSumSource : RandomSourceBase
 	{
 		var tokens = input.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
 		var values = new List<int>();
-		foreach (var token in tokens)
+		if (tokens.Length != Sides.Count)
+			return null;
+		for (var index = 0; index < tokens.Length; index++)
 		{
-			if (!int.TryParse(token, CultureInfo.CurrentCulture, out var value))
+			var (value, _) = DieUtility.TryParseSingleValue(tokens[index], Sides[index]);
+			if (value is null)
 				return null;
-			values.Add(value);
+			values.Add(value.Value);
 		}
 
-		if (values.Count == 0)
-		{
+		if (values.Sum() > Sides.Sum())
 			return null;
-		}
-		else
-		{
-			if (values.Count != Sides.Count || values.Sum() > Sides.Sum())
-				return null;
-		}
 
 		return new DieValue(values.Sum());
 	}

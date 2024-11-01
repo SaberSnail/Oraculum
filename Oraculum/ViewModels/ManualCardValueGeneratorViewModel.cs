@@ -1,13 +1,16 @@
 ﻿using System;
+using Oraculum.Engine;
 
 namespace Oraculum.ViewModels;
 
 public sealed class ManualCardValueGeneratorViewModel : ManualValueGeneratorViewModelBase
 {
-	public ManualCardValueGeneratorViewModel(int config, Action onRollStarted, Action onValueGenerated)
-		: base(config, onRollStarted, onValueGenerated)
+	public ManualCardValueGeneratorViewModel(int config, Action onValueGenerated)
+		: base(config, onValueGenerated)
 	{
 	}
+
+	public override string HintText => CardUtility.GetHintTextForConfiguration(Configuration);
 
 	protected override (bool IsValid, string Error) IsValid(string propertyName)
 	{

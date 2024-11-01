@@ -106,10 +106,10 @@ namespace Oraculum.SetView
 						oldSelectedNode.IsSelected = false;
 					if (value is not null)
 						value.IsSelected = true;
-
-					if (value is TableViewModel table)
-						SetSelectedTable(table);
 				}
+
+				if (value is TableViewModel table)
+					SetSelectedTable(table);
 			}
 		}
 
@@ -188,12 +188,13 @@ namespace Oraculum.SetView
 			}
 		}
 
-		public async Task<bool> TryOpenTableAsync(TableReference tableRef, TaskStateController state)
+		public async Task<bool> TryOpenTableAsync(TableReference tableRef, string? rollContext, TaskStateController state)
 		{
 			await state.ToSyncContext();
 			var table = FindNearestTable(SelectedTableNode, tableRef);
 			if (table is not null)
 			{
+				table.SetNextRollContext(rollContext);
 				SelectedTableNode = table;
 				await m_loadSelectedTableWork!.TaskCompleted.ConfigureAwait(false);
 			}

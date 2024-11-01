@@ -88,6 +88,15 @@ namespace Oraculum {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0}, {1}.
+        /// </summary>
+        public static string CardSequenceInputHint {
+            get {
+                return ResourceManager.GetString("CardSequenceInputHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Clubs.
         /// </summary>
         public static string CardSuitClubDisplay {

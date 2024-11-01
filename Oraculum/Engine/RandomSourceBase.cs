@@ -11,6 +11,7 @@ public abstract class RandomSourceBase
 	{
 		return plan.Kind switch
 		{
+			RandomSourceKind.Fixed => new FixedSource(plan.Configurations.Count),
 			RandomSourceKind.DiceSum => new DiceSumSource(plan.Configurations),
 			RandomSourceKind.DiceSequence => new DiceSequenceSource(plan.Configurations),
 			RandomSourceKind.CardSequence => new CardSequenceSource(plan.Configurations),

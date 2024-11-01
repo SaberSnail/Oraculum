@@ -4,7 +4,6 @@ using System.Linq;
 using GoldenAnvil.Utility;
 
 namespace Oraculum.Engine;
-
 public sealed class DiceSequenceSource : RandomSourceBase
 {
 	public DiceSequenceSource(IEnumerable<int> configurations)
@@ -12,7 +11,7 @@ public sealed class DiceSequenceSource : RandomSourceBase
 	{
 		Sides = configurations.AsReadOnlyList();
 		InputHintText = Sides
-			.Select(x => string.Format(OurResources.SingleDieInputHint, x))
+			.Select(DieUtility.GetHintTextForConfiguration)
 			.Aggregate((joined, next) => string.Format(OurResources.DiceSequenceInputHint, joined, next));
 	}
 

@@ -9,24 +9,24 @@ namespace Oraculum.ViewModels;
 
 public sealed class ValueGenerator : ViewModelBase, IDisposable
 {
-	public ValueGenerator(TableReference tableReference, RandomSourceBase randomSource, Action<RandomValueBase> onValueGenerated)
+	public ValueGenerator(IEnumerable<RandomSourceBase> randomSources, Action<IReadOnlyList<RandomValueBase>> onValueGenerated)
 	{
-		m_tableReference = tableReference;
 		m_onValueGenerated = onValueGenerated;
-		m_randomSource = randomSource;
-		m_generators = CreateGenerators();
+		m_randomSources = randomSources.ToList();
+		m_randomSourcesAndGenerators = [];
+		m_allGenerators = CreateGenerators();
 		AppModel.Instance.Settings.SettingChanged += OnSettingChanged;
 	}
 
 	public IReadOnlyList<ValueGeneratorViewModelBase> Generators
 	{
-		get => VerifyAccess(m_generators);
-		set => SetPropertyField(value, ref m_generators);
+		get => VerifyAccess(m_allGenerators);
+		private set => SetPropertyField(value, ref m_allGenerators);
 	}
 
 	public void Roll()
 	{
-		foreach (var generator in m_generators)
+		foreach (var generator in Generators)
 			generator.Roll();
 	}
 
@@ -37,36 +37,46 @@ public sealed class ValueGenerator : ViewModelBase, IDisposable
 
 	private IReadOnlyList<ValueGeneratorViewModelBase> CreateGenerators()
 	{
-		var rollManually = AppModel.Instance.Settings.Get<bool>(SettingsKeys.RollValueManually);
-		return m_randomSource.Configurations
-			.Select(x => ValueGeneratorViewModelBase.Create(m_randomSource.Kind, x, rollManually, OnRollStarted, OnValueGenerated))
-			.AsReadOnlyList();
-	}
+		var shouldRollManually = AppModel.Instance.Settings.Get<bool>(SettingsKeys.RollValueManually);
+		var allGenerators = new List<ValueGeneratorViewModelBase>();
+		m_randomSourcesAndGenerators.Clear();
+		foreach (var randomSource in m_randomSources)
+		{
+			var generators = randomSource.Configurations
+				.Select(x => ValueGeneratorViewModelBase.Create(randomSource.Kind, x, shouldRollManually, OnValueGenerated))
+				.AsReadOnlyList();
+			m_randomSourcesAndGenerators.Add((randomSource, generators));
+			allGenerators.AddRange(generators);
+		}
 
-	private void OnRollStarted()
-	{
-		if (m_generators.Count(x => x.IsRollStarted) == 1)
-			AppModel.Instance.RollLog.RollStarted(m_tableReference);
+		return allGenerators;
 	}
 
 	private void OnValueGenerated()
 	{
-		if (m_generators.All(x => x.GeneratedValue is not null))
-		{
-			var values = m_generators.Select(x => x.GeneratedValue!.Value).AsReadOnlyList();
-			RandomValueBase value = m_randomSource switch
+		if (m_allGenerators.Any(x => x.GeneratedValue is null))
+			return;
+
+		var allValues = m_randomSourcesAndGenerators
+			.Select(randomSourceAndGenerators =>
 			{
-				DiceSumSource dieSource => new DieValue(values.Sum()),
-				DiceSequenceSource dieSource => new DieValue(values),
-				CardSequenceSource cardSource => new CardValue(values),
-				_ => throw new NotImplementedException(),
-			};
+				var values = randomSourceAndGenerators.Generators.Select(x => x.GeneratedValue!.Value).AsReadOnlyList();
+				RandomValueBase value = randomSourceAndGenerators.RandomSource switch
+				{
+					DiceSumSource dieSource => new DieValue(values.Sum()),
+					DiceSequenceSource dieSource => new DieValue(values),
+					CardSequenceSource cardSource => new CardValue(values),
+					FixedSource fixedSource => new FixedValue(values.Count),
+					_ => throw new NotImplementedException(),
+				};
+				return value;
+			})
+			.AsReadOnlyList();
 
-			m_onValueGenerated(value);
+		m_onValueGenerated(allValues);
 
-			foreach (var generator in m_generators)
-				generator.OnReportingFinished();
-		}
+		foreach (var generator in m_allGenerators)
+			generator.OnReportingFinished();
 	}
 
 	private void OnSettingChanged(object? sender, GenericEventArgs<string> e)
@@ -75,8 +85,8 @@ public sealed class ValueGenerator : ViewModelBase, IDisposable
 			Generators = CreateGenerators();
 	}
 
-	private readonly TableReference m_tableReference;
-	private readonly Action<RandomValueBase> m_onValueGenerated;
-	private readonly RandomSourceBase m_randomSource;
-	private IReadOnlyList<ValueGeneratorViewModelBase> m_generators;
+	private readonly Action<IReadOnlyList<RandomValueBase>> m_onValueGenerated;
+	private readonly IReadOnlyList<RandomSourceBase> m_randomSources;
+	private readonly List<(RandomSourceBase RandomSource, IReadOnlyList<ValueGeneratorViewModelBase> Generators)> m_randomSourcesAndGenerators;
+	private IReadOnlyList<ValueGeneratorViewModelBase> m_allGenerators;
 }

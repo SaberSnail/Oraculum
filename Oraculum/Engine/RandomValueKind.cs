@@ -2,6 +2,7 @@
 
 public enum RandomValueKind
 {
+	Fixed,
 	Die,
 	Card,
 }

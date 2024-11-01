@@ -28,7 +28,7 @@ public static class TokenStringUtility
 				var hyperlinkRun = new Run(tableReference.Title);
 				var hyperlink = new Hyperlink(hyperlinkRun)
 				{
-					Command = new DelegateCommand(() => AppModel.Instance.OpenTable(tableReference))
+					Command = new DelegateCommand(() => AppModel.Instance.OpenTableFromRollLog(tableReference, text))
 				};
 				yield return hyperlink;
 			}
@@ -44,7 +44,7 @@ public static class TokenStringUtility
 			yield return new Run(text.Substring(currentIndex)).WithStyle(textStyle);
 	}
 
-	public static IEnumerable<TableReference> GetTableReferences(string text)
+	public static IReadOnlyList<TableReference> GetTableReferences(string text)
 	{
 		return s_tokenRegex.Matches(text)
 			.Cast<Match>()
@@ -56,7 +56,41 @@ public static class TokenStringUtility
 				return null;
 			})
 			.WhereNotNull()
-			.Cast<TableReference>();
+			.Cast<TableReference>()
+			.AsReadOnlyList();
+	}
+
+	public static string ReplaceTableReferences(string text, Func<TableReference, string?> getOutput)
+	{
+		var updatedText = text;
+
+		var replacedAnyText = false;
+		do
+		{
+			replacedAnyText = false;
+			var captures = s_tokenRegex.Matches(updatedText)
+				.Cast<Match>()
+				.Select(match => (Capture: match.Groups[0].Captures[0], Replacement: default(string)))
+				.ToList();
+			for (var i = 0; i < captures.Count; i++)
+			{
+				var capture = captures[i];
+				var captureText = capture.Capture.ToString();
+				if (Guid.TryParse(captureText, out var tableId))
+				{
+					var table = AppModel.Instance.Data.GetTableReference(tableId);
+					var replacement = table is null ? null : getOutput(table);
+					captures[i] = (Capture: capture.Capture, Replacement: replacement);
+					capture.Replacement = replacement;
+				}
+			}
+			foreach ((var capture, var replacement) in captures.Where(x => x.Replacement is not null).Reverse())
+			{
+				updatedText = $"{updatedText[..capture.Index]}{replacement}{updatedText[(capture.Index + capture.Length)..]}";
+				replacedAnyText = true;
+			}
+		} while (replacedAnyText);
+		return updatedText;
 	}
 
 	private static readonly Regex s_tokenRegex = new Regex(@"\{([0-9A-Fa-f]{8}[-]?(?:[0-9A-Fa-f]{4}[-]?){3}[0-9A-Fa-f]{12})\}");

@@ -23,21 +23,6 @@ namespace Oraculum.Tests
 		}
 
 		[Test]
-		public void TableMetadataRoundTrip()
-		{
-			var originalData = CreateTable();
-
-			using var stream = new MemoryStream();
-
-			Serializer.Serialize(stream, originalData);
-			stream.Seek(0, SeekOrigin.Begin);
-
-			var newData = Serializer.Deserialize<TableMetadata>(stream);
-
-			newData.Should().BeEquivalentTo(originalData);
-		}
-
-		[Test]
 		public void RowDataRoundTrip()
 		{
 			var originalData = CreateRow();
@@ -91,8 +76,8 @@ namespace Oraculum.Tests
 		{
 			return new RowDataDto
 			{
-				Min = 1,
-				Max = 50,
+				Min = [1],
+				Max = [50],
 				Output = "no"
 			};
 		}

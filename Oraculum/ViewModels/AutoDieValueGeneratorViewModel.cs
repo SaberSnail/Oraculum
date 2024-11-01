@@ -2,15 +2,14 @@
 using Oraculum.Engine;
 
 namespace Oraculum.ViewModels;
-
 public sealed class AutoDieValueGeneratorViewModel : ValueGeneratorViewModelBase
 {
-	public AutoDieValueGeneratorViewModel(int config, Action onRollStarted, Action onValueGenerated)
-		: base(config, onRollStarted, onValueGenerated)
+	public AutoDieValueGeneratorViewModel(int config, Action onValueGenerated)
+		: base(config, onValueGenerated)
 	{
 		MaxValue = Configuration;
 		TargetValue = Configuration;
-		ShouldAnimate = true;
+		ShouldAnimate = false;
 	}
 
 	public int MaxValue { get; }

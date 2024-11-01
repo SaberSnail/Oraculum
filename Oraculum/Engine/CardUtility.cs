@@ -33,6 +33,12 @@ public static class CardUtility
 	public static bool IsRank(int value) =>
 		value >= FirstRankValue && value <= LastRankValue;
 
+	public static string GetHintTextForConfiguration(CardSourceConfiguration _) =>
+		OurResources.CardInputHint;
+
+	public static string GetHintTextForConfiguration(int config) =>
+		GetHintTextForConfiguration((CardSourceConfiguration) config);
+
 	public static int GetSingleRandomValue(int config) =>
 		GetSingleRandomValue((CardSourceConfiguration) config);
 
@@ -385,7 +391,7 @@ public static class CardUtility
 
 	private static string GetRankShortText(int value)
 	{
-		var rank = (value - FirstRankValue) + 1;
+		var rank = value >= FirstRankValue ? value - FirstRankValue + 1 : value;
 		return rank switch
 		{
 			1 => OurResources.CardValueAceShort,
@@ -398,7 +404,7 @@ public static class CardUtility
 
 	private static string GetRankDisplayText(int value)
 	{
-		var rank = (value - FirstRankValue) + 1;
+		var rank = value >= FirstRankValue ? value - FirstRankValue + 1 : value;
 		return rank switch
 		{
 			1 => OurResources.CardValueAceDisplay,

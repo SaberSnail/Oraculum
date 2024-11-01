@@ -89,20 +89,20 @@ namespace Oraculum.MainWindow
 		public void ToggleTableView() =>
 			IsEditTablePanelVisible = !IsEditTablePanelVisible;
 
-		public async Task OpenTableAsync(TableReference table, TaskStateController state)
+		public async Task OpenTableAsync(TableReference table, string? rollContext, TaskStateController state)
 		{
 			await state.ToSyncContext();
-			if (SelectedSet is null || table == SelectedTable?.TableReference)
+			if (rollContext is null && (SelectedSet is null || table == SelectedTable?.TableReference))
 				return;
 
 			await m_loadSelectedSetWork!.TaskCompleted.ConfigureAwait(false);
-			if (!await SelectedSet.TryOpenTableAsync(table, state).ConfigureAwait(false))
+			if (!await SelectedSet.TryOpenTableAsync(table, rollContext, state).ConfigureAwait(false))
 			{
 				await state.ToSyncContext();
 				SelectedSet = m_openSets[0];
 
 				await m_loadSelectedSetWork.TaskCompleted.ConfigureAwait(false);
-				if (!await SelectedSet.TryOpenTableAsync(table, state).ConfigureAwait(false))
+				if (!await SelectedSet.TryOpenTableAsync(table, rollContext, state).ConfigureAwait(false))
 					Log.Error($"Failed to open table \"{table}\", table ID not found.");
 			}
 		}

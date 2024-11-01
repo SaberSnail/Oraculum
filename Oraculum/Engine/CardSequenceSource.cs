@@ -11,13 +11,16 @@ public sealed class CardSequenceSource : RandomSourceBase
 		: base(configurations)
 	{
 		Configurations = configurations.Cast<CardSourceConfiguration>().AsReadOnlyList();
+		InputHintText = Configurations
+			.Select(CardUtility.GetHintTextForConfiguration)
+			.Aggregate((joined, next) => string.Format(OurResources.CardSequenceInputHint, joined, next));
 	}
 
 	public new IReadOnlyList<CardSourceConfiguration> Configurations { get; }
 
 	public override RandomSourceKind Kind => RandomSourceKind.CardSequence;
 
-	public override string InputHintText => OurResources.CardInputHint;
+	public override string InputHintText { get; }
 
 	public override RandomValueBase? TryConvertToValue(string input)
 	{

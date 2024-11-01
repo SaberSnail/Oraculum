@@ -26,9 +26,9 @@ namespace Oraculum.Tests
 		[TestCase("0 1 1 1 1 1", null)]
 		[TestCase("1 0 1 1 1 1", null)]
 		[TestCase("1 1 0 1 1 1", null)]
-		[TestCase("1 1 1 0 1 1", null)]
-		[TestCase("1 1 1 1 0 1", null)]
-		[TestCase("1 1 1 1 1 0", null)]
+		[TestCase("1 1 1 0 1 1", "15")]
+		[TestCase("1 1 1 1 0 1", "15")]
+		[TestCase("1 1 1 1 1 0", "15")]
 		[TestCase("1 1 1 1 1 1 1", null)]
 		public void ParseAndRenderShortDiceSumTest(string input, string output) =>
 			ParseAndRenderShortTest(s_diceSumPlan, input, output);
@@ -40,11 +40,11 @@ namespace Oraculum.Tests
 		[TestCase("1 1 1", null)]
 		[TestCase("1 1 1 1", null)]
 		[TestCase("1 1 1 1", null)]
-		[TestCase("1, 1, 1, 1, 1", "1 1 1 1 1")]
-		[TestCase("1,1,1,1,1", "1 1 1 1 1")]
-		[TestCase("1 1 1 1 1", "1 1 1 1 1")]
-		[TestCase("4, 6, 8, 10, 12", "4 6 8 10 12")]
-		[TestCase("4 6 8 10 12", "4 6 8 10 12")]
+		[TestCase("1, 1, 1, 1, 1", "1,1,1,1,1")]
+		[TestCase("1,1,1,1,1", "1,1,1,1,1")]
+		[TestCase("1 1 1 1 1", "1,1,1,1,1")]
+		[TestCase("4, 6, 8, 10, 12", "4,6,8,10,12")]
+		[TestCase("4 6 8 10 12", "4,6,8,10,12")]
 		[TestCase("5 1 1 1 1", null)]
 		[TestCase("1 7 1 1 1", null)]
 		[TestCase("1 1 9 1 1", null)]
@@ -53,8 +53,8 @@ namespace Oraculum.Tests
 		[TestCase("0 1 1 1 1", null)]
 		[TestCase("1 0 1 1 1", null)]
 		[TestCase("1 1 0 1 1", null)]
-		[TestCase("1 1 1 0 1", null)]
-		[TestCase("1 1 1 1 0", null)]
+		[TestCase("1 1 1 0 1", "1,1,1,10,1")]
+		[TestCase("1 1 1 1 0", "1,1,1,1,10")]
 		[TestCase("1 1 1 1 1 1", null)]
 		public void ParseAndRenderShortDiceSequenceTest(string input, string output) =>
 			ParseAndRenderShortTest(s_diceSequencePlan, input, output);
@@ -74,10 +74,7 @@ namespace Oraculum.Tests
 		private static void ParseAndRenderShortTest(RandomPlan plan, string input, string output)
 		{
 			var source = RandomSourceBase.Create(plan);
-			if (output is null)
-				source.Should().BeNull();
-			else
-				source.Should().NotBeNull();
+			source.Should().NotBeNull();
 
 			var value = source?.TryConvertToValue(input);
 			if (output is null)

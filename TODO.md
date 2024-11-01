@@ -40,3 +40,6 @@
 * Support in database for multi-dice tables
 * Add multi-dice import
 * Support import from an entire folder (bulk import)
+* Support table with a single fixed value
+* Predict which dice can be rolled ahead of time from sub-tables
+* Fill in missing values in result as they are clicked

@@ -36,7 +36,7 @@ namespace Oraculum.Data
 		public static bool operator !=(TableReference left, TableReference? right) =>
 			!left.Equals(right);
 
-		public override string ToString() => Title;
+		public override string ToString() => m_title;
 
 		protected abstract void OnTitleChanged();
 

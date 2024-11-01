@@ -1,14 +1,17 @@
 ﻿using System;
 using System.ComponentModel;
+using GoldenAnvil.Utility;
 
 namespace Oraculum.ViewModels;
 
 public abstract class ManualValueGeneratorViewModelBase : ValueGeneratorViewModelBase, IDataErrorInfo
 {
-	protected ManualValueGeneratorViewModelBase(int config, Action onRollStarted, Action onValueGenerated)
-		: base(config, onRollStarted, onValueGenerated)
+	protected ManualValueGeneratorViewModelBase(int config, Action onValueGenerated)
+		: base(config, onValueGenerated)
 	{
 	}
+
+	public event EventHandler? RollStarted;
 
 	public int? InputValue
 	{
@@ -20,13 +23,19 @@ public abstract class ManualValueGeneratorViewModelBase : ValueGeneratorViewMode
 		}
 	}
 
+	public abstract string HintText { get; }
+
 	public string Error => "";
 
 	public string this[string propertyName] => IsValid(propertyName).Error;
 
 	public override void OnReportingFinished() => Roll();
 
-	protected override void RollCore() => InputValue = null;
+	protected override void RollCore()
+	{
+		InputValue = null;
+		RollStarted.Raise(this);
+	}
 
 	protected abstract (bool IsValid, string Error) IsValid(string propertyName);
 

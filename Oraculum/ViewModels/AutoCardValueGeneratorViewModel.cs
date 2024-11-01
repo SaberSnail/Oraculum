@@ -5,8 +5,8 @@ namespace Oraculum.ViewModels;
 
 public sealed class AutoCardValueGeneratorViewModel : ValueGeneratorViewModelBase
 {
-	public AutoCardValueGeneratorViewModel(int config, Action onRollStarted, Action onValueGenerated)
-		: base(config, onRollStarted, onValueGenerated)
+	public AutoCardValueGeneratorViewModel(int config, Action onValueGenerated)
+		: base(config, onValueGenerated)
 	{
 	}
 

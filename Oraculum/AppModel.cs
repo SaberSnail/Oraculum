@@ -87,7 +87,14 @@ namespace Oraculum
 		{
 			if (m_mainWindow is null)
 				return;
-			TaskWatcher.Execute(controller => m_mainWindow.OpenTableAsync(table, controller), TaskGroup);
+			TaskWatcher.Execute(controller => m_mainWindow.OpenTableAsync(table, null, controller), TaskGroup);
+		}
+
+		public void OpenTableFromRollLog(TableReference table, string text)
+		{
+			if (m_mainWindow is null)
+				return;
+			TaskWatcher.Execute(controller => m_mainWindow.OpenTableAsync(table, text, controller), TaskGroup);
 		}
 
 		public string GetOrCreateDataFolder()

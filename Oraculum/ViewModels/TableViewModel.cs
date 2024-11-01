@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
@@ -8,6 +9,7 @@ using GoldenAnvil.Utility.Windows.Async;
 using Microsoft.VisualStudio.Threading;
 using Oraculum.Data;
 using Oraculum.Engine;
+using Oraculum.UI;
 
 namespace Oraculum.ViewModels
 {
@@ -26,14 +28,26 @@ namespace Oraculum.ViewModels
 			m_groups = metadata.Groups;
 			m_randomPlan = metadata.RandomPlan;
 			m_randomSource = RandomSourceBase.Create(m_randomPlan);
-			m_valueGenerator = new ValueGenerator(metadata.TableReference, m_randomSource, OnValueGenerated);
+			m_valueGenerator = new ValueGenerator([m_randomSource], OnValueGenerated);
+			m_resultMapper = new ValueToResultMapper();
 			m_useManualRoll = AppModel.Instance.Settings.Get<bool>(SettingsKeys.RollValueManually);
 			m_extraTables = new Dictionary<Guid, (TableMetadata Metadata, ValueToResultMapper ResultMapper)>();
 
 			AppModel.Instance.Settings.SettingChanged += OnSettingChanged;
 		}
 
-		public ValueGenerator ValueGenerator => m_valueGenerator;
+		public event EventHandler? RollStarted;
+		
+		public ValueGenerator ValueGenerator
+		{
+			get => VerifyAccess(m_valueGenerator);
+			private set
+			{
+				var oldValueGenerator = m_valueGenerator;
+				if (SetPropertyField(value, ref m_valueGenerator))
+					oldValueGenerator.Dispose();
+			}
+		}
 
 		public TableReference TableReference => m_metadata.TableReference;
 
@@ -83,6 +97,7 @@ namespace Oraculum.ViewModels
 		public async Task LoadRowsIfNeededAsync(TaskStateController state)
 		{
 			VerifyAccess();
+			m_hasLoggedRollStart = false;
 			if (m_isLoaded)
 				return;
 
@@ -96,38 +111,18 @@ namespace Oraculum.ViewModels
 			try
 			{
 				await state.ToThreadPool();
-
-				var rows = await data.GetRowsAsync(tableId, state.CancellationToken).ConfigureAwait(false);
-
-				/*
-				var extraTableIds = rows
-					.SelectMany(x => TokenStringUtility.GetTableReferences(x.Output).Select(x => x.Id))
-					.Distinct()
-					.AsReadOnlyList();
-				var extraTables = new List<(TableMetadata Metadata, IReadOnlyList<RowDataDto> Rows)>();
-				if (extraTableIds.Count != 0)
-				{
-					var extraTableMetadatas = await data.GetTableMetadatasAsync(extraTableIds, state.CancellationToken).ConfigureAwait(false);
-					foreach (var extraTableMetadata in extraTableMetadatas)
-					{
-						var extraRows = await data.GetRowsAsync(extraTableMetadata.Id, state.CancellationToken).ConfigureAwait(false);
-						if (extraRows is not null)
-							extraTables.Add((extraTableMetadata, extraRows));
-					}
-				}
-				*/
-
+				(var randomPlans, var tables) = await RandomPlanUtility.GetTableRowsAndExtrasAsync(data, TableReference, m_randomPlan, state).ConfigureAwait(false);
 				await state.ToSyncContext();
 
-				m_resultMapper = new ValueToResultMapper(TableReference, m_randomSource, rows);
+				foreach (var table in tables)
+					m_resultMapper.AddTable(table.Key, table.Value.RandomSource, table.Value.Rows);
 
-				/*
-				foreach (var (extraMetadata, extraRows) in extraTables)
+				if (randomPlans is not null)
 				{
-					var mapper = new ValueToResultMapper(extraMetadata.Id, extraMetadata.Title, extraRows);
-					m_extraTables.Add(extraMetadata.Id, (extraMetadata, mapper));
+					m_valueGenerator.Dispose();
+					var sources = randomPlans.Select(RandomSourceBase.Create);
+					ValueGenerator = new ValueGenerator(sources, OnValueGenerated);
 				}
-				*/
 
 				m_isLoaded = true;
 			}
@@ -138,7 +133,22 @@ namespace Oraculum.ViewModels
 			}
 		}
 
-		public void Roll() => m_valueGenerator.Roll();
+		public void SetNextRollContext(string? rollContext)
+		{
+			VerifyAccess();
+			m_rollContext = rollContext;
+		}
+
+		public void Roll()
+		{
+			if (!m_hasLoggedRollStart)
+			{
+				AppModel.Instance.RollLog.RollStarted(TableReference);
+				m_hasLoggedRollStart = true;
+			}
+			RollStarted.Raise(this);
+			m_valueGenerator.Roll();
+		}
 
 		public void CommitChanges()
 		{
@@ -157,10 +167,24 @@ namespace Oraculum.ViewModels
 			DisposableUtility.Dispose(ref m_valueGenerator);
 		}
 
-		private void OnValueGenerated(RandomValueBase value)
+		private void OnValueGenerated(IReadOnlyList<RandomValueBase> values)
 		{
-			var result = m_resultMapper!.GetResult(value);
-			AppModel.Instance.RollLog!.Add(result);
+			var rawResult = m_resultMapper.GetResult(TableReference, values)!;
+			var finalResult = rawResult;
+			if (m_rollContext is not null)
+			{
+				finalResult = new RollResult(rawResult.Table, rawResult.Key, TokenStringUtility.ReplaceTableReferences(m_rollContext, GetOutput));
+				m_rollContext = null;
+
+				string? GetOutput(TableReference table)
+				{
+					if (table != TableReference || m_rollContext is null)
+						return null;
+					m_rollContext = null;
+					return rawResult.Output;
+				}
+			}
+			AppModel.Instance.RollLog!.Add(finalResult);
 		}
 
 		private void OnMetadataPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -211,7 +235,9 @@ namespace Oraculum.ViewModels
 		private bool m_isLoaded;
 		private bool m_isWorking;
 		private ValueGenerator m_valueGenerator;
-		private ValueToResultMapper? m_resultMapper;
+		private ValueToResultMapper m_resultMapper;
 		private bool m_useManualRoll;
+		private bool m_hasLoggedRollStart;
+		private string? m_rollContext;
 	}
 }

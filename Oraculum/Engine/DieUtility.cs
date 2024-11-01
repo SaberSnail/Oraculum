@@ -8,6 +8,9 @@ namespace Oraculum.Engine;
 
 public static class DieUtility
 {
+	public static string GetHintTextForConfiguration(int config) =>
+		string.Format(OurResources.SingleDieInputHint, config);
+
 	public static int GetSingleRandomValue(int config) => Random.Shared.NextRoll(1, config);
 
 	public static IEnumerable<DieValue> GetAllValues(IEnumerable<int> configurations)
@@ -77,7 +80,11 @@ public static class DieUtility
 		if (value == 0)
 		{
 			if (input.All(c => c == '0'))
+			{
 				value = (int) Math.Pow(10, input.Length);
+				if (config is not null && value > config.Value)
+					return (null, null);
+			}
 		}
 
 		var guessedConfig = config ?? GetNearestDieSides(value);

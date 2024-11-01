@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using GoldenAnvil.Utility;
 using Oraculum.Engine;
@@ -71,6 +72,7 @@ namespace Oraculum.Data
 		public IReadOnlyList<string> Groups { get; init; }
 	}
 
+	[DebuggerDisplay("{GetDebugDisplayString()}")]
 	public class RandomPlan : IEquatable<RandomPlan>
 	{
 		public RandomPlan(RandomSourceKind kind, params int[] configurations)
@@ -100,6 +102,8 @@ namespace Oraculum.Data
 
 		public static bool operator !=(RandomPlan left, RandomPlan right) =>
 			!left.Equals(right);
+
+		private string GetDebugDisplayString() => $"{Kind}-{Configurations.Select(x => x.ToString()).Join(",")}";
 	}
 
 	public readonly record struct RowDataDto(IReadOnlyList<int> Min, IReadOnlyList<int> Max, string Output);

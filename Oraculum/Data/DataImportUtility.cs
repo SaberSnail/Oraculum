@@ -235,6 +235,10 @@ namespace Oraculum.Data
 		private static void ValidateRows(IReadOnlyList<(RandomValueBase Value1, RandomValueBase? Value2, IReadOnlyList<int>? GuessedConfigs, string Output)> rows, RandomPlan randomPlan)
 		{
 			var values = new HashSet<RandomValueBase>();
+
+			if (randomPlan.Kind == RandomSourceKind.Fixed && rows.Count != 1)
+				throw new FormatException("Only a single row is permitted for Fixed plans.");
+
 			foreach (var row in rows)
 			{
 				if (row.Value2 is null)
@@ -258,6 +262,9 @@ namespace Oraculum.Data
 			var valueKind = rowInfos[0].Value1.Kind;
 			if (rowInfos.Any(x => (x.Value1?.Kind ?? RandomValueKind.Die) != valueKind))
 				throw new FormatException("All Row values must be the same kind.");
+
+			if (rowInfos.Count == 1)
+				return new RandomPlan(RandomSourceKind.Fixed, 1);
 
 			RandomSourceKind sourceKind;
 			IReadOnlyList<int>? configs;
@@ -328,7 +335,7 @@ namespace Oraculum.Data
 			var kind = RandomSourceKind.DiceSequence;
 
 			var isSum = input.Contains("+");
-			var parts = input.Split(isSum ? "+" : ";", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+			var parts = input.Split(isSum ? new[] { '+' } : new[] { ';', ',' }, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
 			var diceConfigRegex = new Regex(@"(\d*)d(\d+)");
 			var cardConfigRegex = new Regex($"({EnumUtility.Values<CardSourceConfiguration>().Select(x => x.ToString()).Join("|")})");
@@ -369,14 +376,14 @@ namespace Oraculum.Data
 
 		private static (RandomValueBase Value1, RandomValueBase? Value2, IReadOnlyList<int>? GuessedConfigs, string Output) CreateRowInfo(string line, RandomSourceBase? randomSource)
 		{
-			var regex = new Regex(@"^(?:((?:\d+,\s*)+\d+|\d+\s*-\s*\d+|\d+)(?:\s*\.\s+|\s*\:\s+|\s+))?(.*)$");
+			var regex = new Regex(@"^(?:((?:\d+,\s*)+\d+|\d+\s*[-\u2010\u2012\u2013\u2014]\s*\d+|\d+)(?:\s*\.\s+|\s*\:\s+|\s+))?(.*)$");
 			var match = regex.Match(line);
 			var value = match.Groups[1].Success ? match.Groups[1].Value : "";
 
 			if (!match.Groups[2].Success)
 				throw new FormatException($"Row output is missing: {line}");
 
-			var valueParts = value.Split('-', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+			var valueParts = value.Split(new[] { '-', '\u2010', '\u2012', '\u2013', '\u2014' }, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 			if (valueParts.Length > 2)
 				throw new FormatException($"Row value has more than one range: {line}");
 

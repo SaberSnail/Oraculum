@@ -33,6 +33,7 @@ public abstract class ManualValueGeneratorViewModelBase : ValueGeneratorViewMode
 
 	protected override void RollCore()
 	{
+		base.RollCore();
 		InputValue = null;
 		RollStarted.Raise(this);
 	}

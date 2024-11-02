@@ -40,6 +40,7 @@ public sealed class AutoDieValueGeneratorViewModel : ValueGeneratorViewModelBase
 
 	protected override void RollCore()
 	{
+		base.RollCore();
 		TargetValue = DieUtility.GetSingleRandomValue(Configuration);
 		StartRoll = false;
 		StartRoll = true;

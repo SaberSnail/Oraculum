@@ -12,6 +12,7 @@ public sealed class AutoCardValueGeneratorViewModel : ValueGeneratorViewModelBas
 
 	protected override void RollCore()
 	{
+		base.RollCore();
 		GeneratedValue = DieUtility.GetSingleRandomValue(Configuration);
 	}
 }

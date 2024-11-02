@@ -23,9 +23,15 @@ public abstract class ValueGeneratorViewModelBase : ViewModelBase
 	}
 
 	protected ValueGeneratorViewModelBase(int config, Action onValueGenerated)
+		: this(config, onValueGenerated, null)
+	{
+	}
+
+	protected ValueGeneratorViewModelBase(int config, Action onValueGenerated, int? initialGeneratedValue)
 	{
 		Configuration = config;
 		m_onValueGenerated = onValueGenerated;
+		m_generatedValue = initialGeneratedValue;
 	}
 
 	public bool IsRollStarted
@@ -53,7 +59,6 @@ public abstract class ValueGeneratorViewModelBase : ViewModelBase
 
 	public void Roll()
 	{
-		IsRollStarted = true;
 		RollCore();
 	}
 
@@ -61,7 +66,7 @@ public abstract class ValueGeneratorViewModelBase : ViewModelBase
 
 	protected int Configuration { get; }
 
-	protected virtual void RollCore() { }
+	protected virtual void RollCore() => IsRollStarted = true;
 
 	private readonly Action m_onValueGenerated;
 	private int? m_generatedValue;

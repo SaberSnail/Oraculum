@@ -103,7 +103,7 @@ public static class RandomPlanUtility
 
 	private static async Task LoadUnloadedTablesAsync(IReadOnlyList<TableReference> tables, Dictionary<TableReference, TableNode> loadedNodes, DataManager data, TaskStateController state)
 	{
-		var unloadedTables = tables.Where(x => !loadedNodes.ContainsKey(x)).AsReadOnlyList();
+		var unloadedTables = tables.Distinct().Where(x => !loadedNodes.ContainsKey(x)).AsReadOnlyList();
 		if (unloadedTables.Count == 0)
 			return;
 

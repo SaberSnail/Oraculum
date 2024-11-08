@@ -139,22 +139,22 @@ namespace Oraculum.SetView
 				Multiselect = true,
 			};
 			var result = dialog.ShowDialog();
-			if (result == true)
+			if (result != true)
+				return;
+
+			foreach (var fileName in dialog.FileNames)
 			{
-				foreach (var fileName in dialog.FileNames)
-				{
-					Log.Info($"Importing table: {fileName}");
-					lastPath = Path.GetDirectoryName(fileName);
-					var datas = await DataImportUtility.ImportTablesAsync(state, fileName).ConfigureAwait(false);
-					foreach (var (metadata, rows) in datas)
-						await AppModel.Instance.Data.AddTableAsync(metadata, rows, state.CancellationToken).ConfigureAwait(false);
-				}
-
-				await state.ToSyncContext();
-				AppModel.Instance.Settings.Set(SettingsKeys.LastImportPath, lastPath);
-
-				Log.Info("Finished importing tables.");
+				Log.Info($"Importing table: {fileName}");
+				lastPath = Path.GetDirectoryName(fileName);
+				var datas = await DataImportUtility.ImportTablesAsync(state, fileName).ConfigureAwait(false);
+				foreach (var (metadata, rows) in datas)
+					await AppModel.Instance.Data.AddTableAsync(metadata, rows, state.CancellationToken).ConfigureAwait(false);
 			}
+
+			await state.ToSyncContext();
+			AppModel.Instance.Settings.Set(SettingsKeys.LastImportPath, lastPath);
+
+			Log.Info("Finished importing tables.");
 		}
 
 		private async Task BulkImportTablesAsync(TaskStateController state)
@@ -169,23 +169,57 @@ namespace Oraculum.SetView
 				InitialDirectory = lastPath,
 			};
 			var result = dialog.ShowDialog();
-			if (result == true)
+			if (result != true)
+				return;
+
+			Dictionary<string, List<Guid>> groupToTables = new();
+			var fileNames = Directory.GetFiles(dialog.FolderName, "*.*", SearchOption.AllDirectories);
+			foreach (var fileName in fileNames)
 			{
-				var fileNames = Directory.GetFiles(dialog.FolderName, "*.*", SearchOption.AllDirectories);
-				foreach (var fileName in fileNames)
+				Log.Info($"Importing table: {fileName}");
+				lastPath = Path.GetDirectoryName(fileName);
+				var datas = await DataImportUtility.ImportTablesAsync(state, fileName).ConfigureAwait(false);
+				foreach (var (metadata, rows) in datas)
 				{
-					Log.Info($"Importing table: {fileName}");
-					lastPath = Path.GetDirectoryName(fileName);
-					var datas = await DataImportUtility.ImportTablesAsync(state, fileName).ConfigureAwait(false);
-					foreach (var (metadata, rows) in datas)
-						await AppModel.Instance.Data.AddTableAsync(metadata, rows, state.CancellationToken).ConfigureAwait(false);
+					await AppModel.Instance.Data.AddTableAsync(metadata, rows, state.CancellationToken).ConfigureAwait(false);
+
+					var topGroup = metadata.Groups.FirstOrDefault();
+					if (topGroup is not null)
+						groupToTables.GetOrAddValue(topGroup, []).Add(metadata.TableId);
 				}
-
-				await state.ToSyncContext();
-				AppModel.Instance.Settings.Set(SettingsKeys.LastImportPath, lastPath);
-
-				Log.Info("Finished importing tables.");
 			}
+
+			if (groupToTables.Count != 0)
+			{
+				var allSetNames = (await AppModel.Instance.Data.GetAllSetMetadataAsync(state.CancellationToken).ConfigureAwait(false))
+					.Select(x => x.Title)
+					.AsReadOnlyList();
+
+				foreach (var group in groupToTables)
+				{
+					var groupName = group.Key;
+					var tableIds = group.Value;
+					if (allSetNames.Contains(groupName))
+						continue;
+					if (tableIds.Count < 10)
+						continue;
+
+					var setMetadata = new SetMetadata
+					{
+						Created = DateTime.Now,
+						Id = Guid.NewGuid(),
+						Modified = DateTime.Now,
+						Version = 1,
+						Title = groupName,
+					};
+					await AppModel.Instance.Data.AddSetAsync(setMetadata, tableIds, state.CancellationToken).ConfigureAwait(false);
+				}
+			}
+
+			await state.ToSyncContext();
+			AppModel.Instance.Settings.Set(SettingsKeys.LastImportPath, lastPath);
+
+			Log.Info("Finished importing tables.");
 		}
 
 		public async Task<bool> TryOpenTableAsync(TableReference tableRef, string? rollContext, TaskStateController state)

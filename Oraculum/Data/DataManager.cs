@@ -279,11 +279,37 @@ namespace Oraculum.Data
 			return tableReference;
 		}
 
+		public async Task AddSetAsync(SetMetadata set, IEnumerable<Guid> tableIds, CancellationToken cancellationToken)
+		{
+			using var stream = new MemoryStream();
+			Serializer.Serialize(stream, set);
+
+			using var connector = CreateConnector();
+			using var transaction = connector.BeginTransaction();
+
+			var setRecordId = await connector.Command(Sql.Format($@"
+					insert into SetMetadata (Metadata, SetId) values ({stream.ToArray()}, {set.Id}) returning RecordId
+				")).QuerySingleAsync<long>(cancellationToken).ConfigureAwait(false);
+
+			foreach (var tableId in tableIds)
+			{
+				var tableRecordId = await GetTableRecordIdAsync(tableId, connector, cancellationToken).ConfigureAwait(false);
+				await connector.Command(Sql.Format($@"
+					insert into SetTables (SetRecordId, TableRecordId) values ({setRecordId}, {tableRecordId})
+				")).ExecuteAsync(cancellationToken).ConfigureAwait(false);
+			}
+			connector.CommitTransaction();
+		}
+
+		private async Task<long> GetTableRecordIdAsync(Guid tableId, DbConnector connector, CancellationToken cancellationToken)
+		{
+			return await connector.Command(Sql.Format($@"select RecordId from TableMetadata where TableId = {tableId}")).QuerySingleAsync<long>(cancellationToken).ConfigureAwait(false);
+		}
+
 		private async Task<TableReference> AddTableImplAsync(DbConnector connector, TableMetadataDto metadata, IEnumerable<RowDataDto> rows, CancellationToken cancellationToken)
 		{
 			var tableReference = new TableReferenceImpl(metadata.TableId, metadata.Title, this);
 			m_tableReferencesCache.TryAdd(metadata.TableId, tableReference);
-
 
 			var randomPlan = CreateBytes(metadata.RandomPlan);
 			var groups = CreateBytes(metadata.Groups);
@@ -373,6 +399,7 @@ namespace Oraculum.Data
 
 		private static async Task LoadDefaultDataAsync(DbConnector connector, CancellationToken cancellationToken)
 		{
+			/*
 			var sets = GetSetMetadatas();
 			foreach (var set in sets)
 			{
@@ -383,6 +410,7 @@ namespace Oraculum.Data
 					insert into SetMetadata (Metadata, SetId) values ({stream.ToArray()}, {set.Id}) returning RecordId
 				")).QuerySingleAsync<long>(cancellationToken).ConfigureAwait(false);
 			}
+			*/
 		}
 
 		private static IReadOnlyList<SetMetadata> GetSetMetadatas()

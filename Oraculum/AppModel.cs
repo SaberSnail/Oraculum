@@ -72,8 +72,14 @@ namespace Oraculum
 			m_mainWindow = new MainWindowViewModel();
 			m_rollLog = new RollLogViewModel();
 
+			var sets = await Data.GetAllSetMetadataAsync(state.CancellationToken).ConfigureAwait(false);
+			foreach (var set in sets)
+				await m_mainWindow.OpenSetAsync(set.Id, state.CancellationToken).ConfigureAwait(false);
+
+			/*
 			await m_mainWindow.OpenSetAsync(new Guid("599d53df-5076-4f1e-af03-0abe36991eba"), state.CancellationToken).ConfigureAwait(false);
 			await m_mainWindow.OpenSetAsync(new Guid("04e1a881-9650-4cbb-8781-9f0b31391f83"), state.CancellationToken).ConfigureAwait(false);
+			*/
 		}
 
 		public async Task ShutdownAsync()

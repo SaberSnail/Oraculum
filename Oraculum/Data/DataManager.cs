@@ -7,13 +7,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
-using Faithlife.Data;
-using Faithlife.Data.SqlFormatting;
 using GoldenAnvil.Utility;
 using GoldenAnvil.Utility.Logging;
 using GoldenAnvil.Utility.Windows.Async;
 using Microsoft.Data.Sqlite;
 using Microsoft.VisualStudio.Threading;
+using MuchAdo;
+using MuchAdo.Sqlite;
 using ProtoBuf;
 
 namespace Oraculum.Data
@@ -125,7 +125,7 @@ namespace Oraculum.Data
 			UpdateTableMetadata(id, Sql.Format($"Groups={stream.ToArray()}"));
 		}
 
-		private void UpdateTableMetadata(Guid id, Sql updateSql)
+		private void UpdateTableMetadata(Guid id, SqlSource updateSql)
 		{
 			m_workQueue.Add(async state =>
 			{
@@ -209,8 +209,7 @@ namespace Oraculum.Data
 			if (uncachedTableIds.Count != 0)
 			{
 				using var connector = CreateConnector();
-
-				var sql = Sql.Format($"select TableId, Title, Source, Author, Version, Created, Modified, Description, RandomPlan, Groups from TableMetadata where TableId in ({uncachedTableIds}...)");
+				var sql = Sql.Format($"select TableId, Title, Source, Author, Version, Created, Modified, Description, RandomPlan, Groups from TableMetadata where TableId in {uncachedTableIds:set}");
 				var values = await connector.Command(sql)
 					.QueryAsync<(string TableId, string Title, string? Source, string? Author, long Version, string Created, string Modified, string? Description, byte[] RandomPlanBytes, byte[]? GroupsBytes)>(cancellationToken)
 					.ConfigureAwait(false);
@@ -338,7 +337,7 @@ namespace Oraculum.Data
 		}
 
 		private static DbConnector CreateConnector() =>
-			DbConnector.Create(new SqliteConnection(CreateConnectionString()), s_connectorSettings);
+			new SqliteDbConnector(new SqliteConnection(CreateConnectionString()), s_connectorSettings);
 
 		private static string CreateConnectionString()
 		{
@@ -442,12 +441,7 @@ namespace Oraculum.Data
 
 		private static ILogSource Log { get; } = LogManager.CreateLogSource(nameof(DataManager));
 
-		private static readonly DbConnectorSettings s_connectorSettings = new()
-		{
-			AutoOpen = true,
-			LazyOpen = true,
-			SqlSyntax = SqlSyntax.Sqlite,
-		};
+		private static readonly SqliteDbConnectorSettings s_connectorSettings = new SqliteDbConnectorSettings();
 
 		private const int c_dbVersion = 4;
 

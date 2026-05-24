@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="../GoldenAnvil.Utility/GoldenAnvil.Utility.Windows/GoldenAnvil.Utility.Windows.csproj" />
+  <Project Path="../GoldenAnvil.Utility/GoldenAnvil.Utility/GoldenAnvil.Utility.csproj" />
+  <Project Path="Oraculum.Tests/Oraculum.Tests.csproj" />
+  <Project Path="Oraculum/Oraculum.csproj" />
+</Solution>

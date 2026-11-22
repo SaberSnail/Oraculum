@@ -1,0 +1,27 @@
+<Project>
+
+  <!--
+    Every package's version is set here, pinned exactly ([x]), so no other version can be used. See "Third-Party
+    Packages" in Dependencies.md before adding or updating one.
+  -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="[10.0.11]" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="[17.14.15]" />
+    <PackageVersion Include="MuchAdo" Version="[1.2.3]" />
+    <PackageVersion Include="MuchAdo.Sqlite" Version="[1.2.3]" />
+    <PackageVersion Include="protobuf-net" Version="[3.2.56]" />
+  </ItemGroup>
+
+  <ItemGroup Label="Testing">
+    <PackageVersion Include="FluentAssertions" Version="[8.10.0]" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="[18.5.1]" />
+    <PackageVersion Include="NUnit" Version="[4.6.1]" />
+    <PackageVersion Include="NUnit.Analyzers" Version="[4.13.0]" />
+    <PackageVersion Include="NUnit3TestAdapter" Version="[6.2.0]" />
+  </ItemGroup>
+
+</Project>

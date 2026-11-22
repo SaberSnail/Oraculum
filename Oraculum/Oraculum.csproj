@@ -24,11 +24,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.8" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="17.14.15" />
-    <PackageReference Include="MuchAdo" Version="1.2.3" />
-    <PackageReference Include="MuchAdo.Sqlite" Version="1.2.3" />
-    <PackageReference Include="protobuf-net" Version="3.2.56" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading" />
+    <PackageReference Include="MuchAdo" />
+    <PackageReference Include="MuchAdo.Sqlite" />
+    <PackageReference Include="protobuf-net" />
   </ItemGroup>
 
   <ItemGroup>

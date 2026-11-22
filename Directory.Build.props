@@ -1,0 +1,21 @@
+<Project>
+
+  <!-- Third-party package safeguards. See "Third-Party Packages" in Dependencies.md. -->
+  <PropertyGroup>
+    <!--
+      Each project's packages.lock.json records the exact version and content hash of every package it uses, directly or
+      not. Restores fail if a package changes or a version would change, so updating one is always deliberate.
+    -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RestoreLockedMode>true</RestoreLockedMode>
+    <!--
+      Packages with known vulnerabilities, of any severity, used directly or not, stop the build. A restore that can't
+      reach nuget.org to check (NU1900) only warns.
+    -->
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+    <WarningsAsErrors>$(WarningsAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsAsErrors>
+  </PropertyGroup>
+
+</Project>

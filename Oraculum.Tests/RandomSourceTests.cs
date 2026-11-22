@@ -30,7 +30,7 @@ namespace Oraculum.Tests
 		[TestCase("1 1 1 1 0 1", "15")]
 		[TestCase("1 1 1 1 1 0", "15")]
 		[TestCase("1 1 1 1 1 1 1", null)]
-		public void ParseAndRenderShortDiceSumTest(string input, string output) =>
+		public void ParseAndRenderShortDiceSumTest(string input, string? output) =>
 			ParseAndRenderShortTest(s_diceSumPlan, input, output);
 
 		[TestCase("", null)]
@@ -56,7 +56,7 @@ namespace Oraculum.Tests
 		[TestCase("1 1 1 0 1", "1,1,1,10,1")]
 		[TestCase("1 1 1 1 0", "1,1,1,1,10")]
 		[TestCase("1 1 1 1 1 1", null)]
-		public void ParseAndRenderShortDiceSequenceTest(string input, string output) =>
+		public void ParseAndRenderShortDiceSequenceTest(string input, string? output) =>
 			ParseAndRenderShortTest(s_diceSequencePlan, input, output);
 
 		[TestCase("", null)]
@@ -68,10 +68,10 @@ namespace Oraculum.Tests
 		[TestCase("4D BJ 4D K", null)]
 		[TestCase("4D BJ H 4D", null)]
 		[TestCase("4D BJ H K 3S", null)]
-		public void ParseAndRenderShortCardSequenceTest(string input, string output) =>
+		public void ParseAndRenderShortCardSequenceTest(string input, string? output) =>
 			ParseAndRenderShortTest(s_cardSequencePlan, input, output);
 
-		private static void ParseAndRenderShortTest(RandomPlan plan, string input, string output)
+		private static void ParseAndRenderShortTest(RandomPlan plan, string input, string? output)
 		{
 			var source = RandomSourceBase.Create(plan);
 			source.Should().NotBeNull();

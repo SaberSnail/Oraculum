@@ -9,7 +9,7 @@ public sealed class AutoDieValueGeneratorViewModel : ValueGeneratorViewModelBase
 	{
 		MaxValue = Configuration;
 		TargetValue = Configuration;
-		ShouldAnimate = false;
+		ShouldAnimate = true;
 	}
 
 	public int MaxValue { get; }
